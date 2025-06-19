@@ -49,6 +49,18 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        // Verify user role after successful authentication
+        $user = Auth::user();
+        if (! in_array($user->role, ['admin', 'customer'])) {
+            Auth::logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => trans('auth.invalid_role'),
+            ]);
+        }
+
+
         RateLimiter::clear($this->throttleKey());
     }
 
