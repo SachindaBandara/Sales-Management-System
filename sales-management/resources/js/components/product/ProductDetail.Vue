@@ -8,6 +8,7 @@ defineProps<{
 
 defineEmits<{
   (e: 'back'): void
+  (e: 'addToCart', product: any, quantity: number): void
 }>()
 
 const selectedQuantity = ref(1)
@@ -53,6 +54,7 @@ const selectedQuantity = ref(1)
             </select>
           </div>
           <button
+            @click="$emit('addToCart', product, selectedQuantity)"
             class="w-full inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1915014a] bg-[#1b1b18] text-[#EDEDEC] hover:bg-[#1b1b18]/90 dark:bg-[#EDEDEC] dark:text-[#0a0a0a] dark:hover:bg-[#EDEDEC]/90 h-10 px-4 py-2"
           >
             Add to Cart

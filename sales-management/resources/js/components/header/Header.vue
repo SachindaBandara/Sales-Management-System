@@ -5,6 +5,7 @@ import { usePage } from '@inertiajs/vue3'
 
 defineProps<{
   searchQuery: string
+  cartItemsCount: number
   currentView: string
 }>()
 
@@ -47,6 +48,9 @@ const user = page.props.auth.user
           class="relative inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1915014a] hover:bg-[#19140014] dark:hover:bg-[#3E3E3A] h-9 w-9"
         >
           <ShoppingCart class="h-4 w-4" />
+          <span v-if="cartItemsCount > 0" class="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-[#1b1b18] text-xs text-[#EDEDEC] flex items-center justify-center dark:bg-[#EDEDEC] dark:text-[#0a0a0a]">
+            {{ cartItemsCount }}
+          </span>
         </button>
         <nav class="flex items-center gap-4">
           <Link

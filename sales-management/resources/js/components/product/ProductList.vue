@@ -8,8 +8,8 @@ defineProps<{
 
 defineEmits<{
   (e: 'update:sortBy', value: string): void
-   (e: 'selectProduct', product: any): void
-
+  (e: 'selectProduct', product: any): void
+  (e: 'addToCart', product: any): void
 }>()
 </script>
 
@@ -34,7 +34,7 @@ defineEmits<{
         v-for="product in products"
         :key="product.id"
         class="rounded-lg border border-[#19140035] bg-[#FDFDFC] shadow-sm overflow-hidden group cursor-pointer dark:border-[#3E3E3A] dark:bg-[#0a0a0a]"
-       @click="$emit('selectProduct', product)"
+        @click="$emit('selectProduct', product)"
       >
         <div class="aspect-square overflow-hidden">
           <img
@@ -54,6 +54,7 @@ defineEmits<{
             </div>
           </div>
           <button
+            @click.stop="$emit('addToCart', product)"
             class="w-full mt-4 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1915014a] bg-[#1b1b18] text-[#EDEDEC] hover:bg-[#1b1b18]/90 dark:bg-[#EDEDEC] dark:text-[#0a0a0a] dark:hover:bg-[#EDEDEC]/90 h-9 px-4 py-2"
           >
             Add to Cart

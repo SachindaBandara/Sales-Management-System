@@ -20,9 +20,8 @@ export default defineConfig({
                 },
             },
         }),
-       
     ],
-    assetsInclude: ['**/*.png', '**/*.jpg'],
+   
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './resources/js'),
