@@ -7,12 +7,12 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+//import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import UserMenuContent from '@/components/UserMenuContent.vue';
 import { getInitials } from '@/composables/useInitials';
 import type { BreadcrumbItem, NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-vue-next';
+import { LayoutGrid, Menu, Search } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Props {
@@ -38,20 +38,21 @@ const mainNavItems: NavItem[] = [
         href: '/dashboard',
         icon: LayoutGrid,
     },
+      
 ];
 
-const rightNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
-    },
-];
+// const rightNavItems: NavItem[] = [
+//     {
+//         title: 'Repository',
+//         href: 'https://github.com/laravel/vue-starter-kit',
+//         icon: Folder,
+//     },
+//     {
+//         title: 'Documentation',
+//         href: 'https://laravel.com/docs/starter-kits#vue',
+//         icon: BookOpen,
+//     },
+// ];
 </script>
 
 <template>
@@ -84,7 +85,7 @@ const rightNavItems: NavItem[] = [
                                         {{ item.title }}
                                     </Link>
                                 </nav>
-                                <div class="flex flex-col space-y-4">
+                                <!-- <div class="flex flex-col space-y-4">
                                     <a
                                         v-for="item in rightNavItems"
                                         :key="item.title"
@@ -96,7 +97,7 @@ const rightNavItems: NavItem[] = [
                                         <component v-if="item.icon" :is="item.icon" class="h-5 w-5" />
                                         <span>{{ item.title }}</span>
                                     </a>
-                                </div>
+                                </div> -->
                             </div>
                         </SheetContent>
                     </Sheet>
@@ -134,7 +135,7 @@ const rightNavItems: NavItem[] = [
                         </Button>
 
                         <div class="hidden space-x-1 lg:flex">
-                            <template v-for="item in rightNavItems" :key="item.title">
+                            <!-- <template v-for="item in rightNavItems" :key="item.title">
                                 <TooltipProvider :delay-duration="0">
                                     <Tooltip>
                                         <TooltipTrigger>
@@ -150,7 +151,7 @@ const rightNavItems: NavItem[] = [
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
-                            </template>
+                            </template> -->
                         </div>
                     </div>
 
