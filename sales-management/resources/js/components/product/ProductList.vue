@@ -8,6 +8,8 @@ defineProps<{
 
 defineEmits<{
   (e: 'update:sortBy', value: string): void
+   (e: 'selectProduct', product: any): void
+
 }>()
 </script>
 
@@ -32,6 +34,7 @@ defineEmits<{
         v-for="product in products"
         :key="product.id"
         class="rounded-lg border border-[#19140035] bg-[#FDFDFC] shadow-sm overflow-hidden group cursor-pointer dark:border-[#3E3E3A] dark:bg-[#0a0a0a]"
+       @click="$emit('selectProduct', product)"
       >
         <div class="aspect-square overflow-hidden">
           <img
