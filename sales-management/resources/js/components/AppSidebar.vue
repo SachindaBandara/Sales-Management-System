@@ -14,6 +14,47 @@ const mainNavItems: NavItem[] = [
         href: '/dashboard',
         icon: LayoutGrid,
     },
+       {
+        title: 'Customers',
+        href: '/customers',
+        icon: LayoutGrid,
+    },
+       {
+        title: 'Products',
+        href: '/products',
+        icon: LayoutGrid,
+    },
+       {
+        title: 'Orders',
+        href: '/orders',
+        icon: LayoutGrid,
+    },
+       {
+        title: 'Stock',
+        href: '/stock',
+        icon: LayoutGrid,
+    },
+     {
+        title: 'Bulk Management',
+        href: '/bulk-management',
+        icon: LayoutGrid,
+    },
+      {
+        title: 'Payments',
+        href: '/payments',
+        icon: LayoutGrid,
+    },
+     {
+        title: 'Billing',
+        href: '/billing',
+        icon: LayoutGrid,
+    },
+     {
+        title: 'Email',
+        href: '/email',
+        icon: LayoutGrid,
+    },
+    
 ];
 
 const footerNavItems: NavItem[] = [
@@ -27,6 +68,7 @@ const footerNavItems: NavItem[] = [
         href: 'https://laravel.com/docs/starter-kits#vue',
         icon: BookOpen,
     },
+
 ];
 </script>
 
