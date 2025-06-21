@@ -32,4 +32,3 @@ const showAvatar = computed(() => props.user.avatar && props.user.avatar !== '')
         <span v-if="showEmail" class="truncate text-xs text-muted-foreground">{{ user.email }}</span>
     </div>
 </template>
-

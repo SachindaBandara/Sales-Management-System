@@ -19,7 +19,7 @@ const userRole = computed(() => page.props.auth.user.role || 'customer');
 
 // Determine which layout to use based on user role
 const layoutComponent = computed(() =>
-  userRole.value === 'admin' ? AppSidebarLayout : AppHeaderLayout
+  userRole.value === 'admin' ? AppHeaderLayout : AppSidebarLayout
 );
 </script>
 
