@@ -21,7 +21,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role'
+        'role',
+        'last_login_at',
+        'is_active',
     ];
 
     /**
@@ -43,11 +45,14 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 
-      public function isAdmin()
+       // Role helper methods
+    public function isAdmin()
     {
         return $this->role === 'admin';
     }
@@ -55,5 +60,25 @@ class User extends Authenticatable
     public function isCustomer()
     {
         return $this->role === 'customer';
+    }
+     public function hasRole(string $role): bool
+    {
+        return $this->role === $role;
+    }
+
+     // Scopes
+    public function scopeAdmins($query)
+    {
+        return $query->where('role', 'admin');
+    }
+
+    public function scopeCustomers($query)
+    {
+        return $query->where('role', 'customer');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 }

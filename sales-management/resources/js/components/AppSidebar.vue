@@ -11,22 +11,22 @@ import AppLogo from './AppLogo.vue';
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: '/dashboard',
+        href: 'admin/dashboard',
         icon: LayoutGrid,
     },
        {
         title: 'Customers',
-        href: '/customers',
+        href: 'admin/customers',
         icon: LayoutGrid,
     },
        {
         title: 'Products',
-        href: '/products',
+        href: 'admin/products',
         icon: LayoutGrid,
     },
        {
         title: 'Orders',
-        href: '/orders',
+        href: 'admin/orders',
         icon: LayoutGrid,
     },
        {
@@ -54,7 +54,7 @@ const mainNavItems: NavItem[] = [
         href: '/email',
         icon: LayoutGrid,
     },
-    
+
 ];
 
 const footerNavItems: NavItem[] = [

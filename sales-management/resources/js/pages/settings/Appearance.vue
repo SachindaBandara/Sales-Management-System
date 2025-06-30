@@ -1,30 +1,28 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-
 import AppearanceTabs from '@/components/AppearanceTabs.vue';
-import HeadingSmall from '@/components/HeadingSmall.vue';
-import { type BreadcrumbItem } from '@/types';
-
-import AppLayout from '@/layouts/AppLayout.vue';
-import SettingsLayout from '@/layouts/settings/Layout.vue';
-
-const breadcrumbItems: BreadcrumbItem[] = [
-    {
-        title: 'Appearance settings',
-        href: '/settings/appearance',
-    },
-];
+import AuthenticationLayout from '../../../js/layouts/AuthenticatedLayout.vue';
+import SettingLayout from '../../layouts/settings/Layout.vue';
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="breadcrumbItems">
-        <Head title="Appearance settings" />
+    <AuthenticationLayout>
+        <Head title="Appearance Settings" />
+        <template #header>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Appearance Settings</h2>
+        </template>
 
-        <SettingsLayout>
-            <div class="space-y-6">
-                <HeadingSmall title="Appearance settings" description="Update your account's appearance settings" />
-                <AppearanceTabs />
+        <SettingLayout>
+        <div class="py-12">
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 text-gray-900">
+                        <p class="mb-4 font-medium">Update your account's appearance settings.</p>
+                        <AppearanceTabs />
+                    </div>
+                </div>
             </div>
-        </SettingsLayout>
-    </AppLayout>
+        </div>
+        </SettingLayout>
+    </AuthenticationLayout>
 </template>

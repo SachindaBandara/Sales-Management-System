@@ -1,19 +1,45 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
+use App\Http\Controllers\ProfileController;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome');
+    return Inertia::render('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+        'laravelVersion' => Application::VERSION,
+        'phpVersion' => PHP_VERSION,
+    ]);
 })->name('home');
 
-Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Redirect after login based on role
+Route::middleware('auth')->get('/dashboard', function () {
+    $user = \Illuminate\Support\Facades\Auth::user();
+    // Ensure $user is an instance of App\Models\User
+    if ($user instanceof \App\Models\User && $user->isAdmin()) {
+        return redirect()->route('admin.dashboard');
+    }
+    return redirect()->route('customer.dashboard');
+})->name('dashboard');
 
-Route::get('admin/dashboard', function () {
-    return Inertia::render('AdminDashboard');
-})->middleware(['auth', 'verified'])->name('admindashboard');
+// Admin Routes
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+    // User Management
+    Route::resource('users', UserController::class);
+    Route::patch('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+});
+
+// Customer Routes
+Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->group(function () {
+    Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
+});
+
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';
