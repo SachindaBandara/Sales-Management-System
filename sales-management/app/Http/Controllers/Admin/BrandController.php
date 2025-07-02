@@ -113,8 +113,7 @@ class BrandController extends Controller
             $validated['logo'] = $path;
             Log::info('Logo updated', ['path' => $path]);
         }
-            $validated['logo'] = $request->file('logo')->store('brands', 'public');
-        
+            
 
         $brand->update($validated);
 
