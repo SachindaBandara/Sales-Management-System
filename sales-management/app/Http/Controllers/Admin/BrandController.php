@@ -123,9 +123,20 @@ class BrandController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Brand $brand)
     {
-        //
+        // if ($brand->products()->count() > 0) {
+        //     return back()->with('error', 'Cannot delete brand with associated products.');
+        // }
+
+        if ($brand->logo && Storage::disk('public')->exists($brand->logo)) {
+            Storage::disk('public')->delete($brand->logo);
+        }
+
+        $brand->delete();
+
+        return redirect()->route('admin.brands.index')
+            ->with('success', 'Brand deleted successfully.');
     }
 
     public function toggleStatus(Brand $brand)
