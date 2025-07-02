@@ -73,9 +73,11 @@ class BrandController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Brand $brand)
     {
-        //
+       return Inertia::render('Admin/Brands/Show', [
+            'brand' => $brand,
+        ]);
     }
 
     /**
