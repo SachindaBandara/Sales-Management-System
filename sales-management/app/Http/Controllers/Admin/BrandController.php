@@ -15,18 +15,18 @@ class BrandController extends Controller
      */
     public function index(Request $request)
     {
-        $brands= Brand::query()
-        // Filter by search term
-        ->when($request->search, function($query, $search){
-            $query->where('name', 'like', "%{$search}%");
-        })
-        // Filter by status
-        ->when($request->status !== null, function($query) use ($request){
-            $query->where('is_active', $request->status);
-        })
-        ->orderBy('name')
-        ->paginate(10)
-        ->withQueryString();
+        $brands = Brand::query()
+            // Filter by search term
+            ->when($request->search, function ($query, $search) {
+                $query->where('name', 'like', "%{$search}%");
+            })
+            // Filter by status
+            ->when($request->status !== null, function ($query) use ($request) {
+                $query->where('is_active', $request->status);
+            })
+            ->orderBy('name')
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('Admin/Brands/Index', [
             'brands' => $brands,
@@ -39,7 +39,7 @@ class BrandController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Admin/Brands/Create');
     }
 
     /**
@@ -47,7 +47,22 @@ class BrandController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'is_active' => 'boolean',
+        ]);
+
+        // Handle logo upload
+        if ($request->hasFile('logo')) {
+            $validated['logo'] = $request->file('logo')->store('brands', 'public');
+        }
+
+        // Create the brand
+        Brand::create($validated);
+
+        return redirect()->route('admin.brands.index')->with('success', 'Brand created successfully.');
     }
 
     /**
