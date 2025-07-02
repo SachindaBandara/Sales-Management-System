@@ -7,6 +7,8 @@ use App\Models\Brand;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class BrandController extends Controller
 {
@@ -49,18 +51,21 @@ class BrandController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'slug' => 'required|string|unique:brands,slug|max:255',
             'description' => 'nullable|string',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'boolean',
         ]);
 
-        // Handle logo upload
+        $brand = new Brand($validated);
+
         if ($request->hasFile('logo')) {
-            $validated['logo'] = $request->file('logo')->store('brands', 'public');
+            $path = $request->file('logo')->store('brand_logos', 'public');
+            $brand->logo = $path;
+            Log::info('Logo uploaded', ['path' => $path]);
         }
 
-        // Create the brand
-        Brand::create($validated);
+        $brand->save();
 
         return redirect()->route('admin.brands.index')->with('success', 'Brand created successfully.');
     }
@@ -76,17 +81,43 @@ class BrandController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Brand $brand)
     {
-        //
+
+        return Inertia::render('Admin/Brands/Edit', [
+            'brand' => $brand,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Brand $brand)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|unique:brands,slug,' . $brand->id . '|max:255',
+            'description' => 'nullable|string',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_active' => 'boolean',
+        ]);
+
+       if ($request->hasFile('logo')) {
+            // Delete old logo if exists
+            if ($brand->logo && Storage::disk('public')->exists($brand->logo)) {
+                Storage::disk('public')->delete($brand->logo);
+            }
+            $path = $request->file('logo')->store('brand_logos', 'public');
+            $validated['logo'] = $path;
+            Log::info('Logo updated', ['path' => $path]);
+        }
+            $validated['logo'] = $request->file('logo')->store('brands', 'public');
+        
+
+        $brand->update($validated);
+
+        return redirect()->route('admin.brands.index')
+            ->with('success', 'Brand updated successfully.');
     }
 
     /**
@@ -95,5 +126,11 @@ class BrandController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function toggleStatus(Brand $brand)
+    {
+        $brand->update(['is_active' => !$brand->is_active]);
+        return redirect()->route('admin.brands.index')->with('success', 'Brand status updated successfully.');
     }
 }

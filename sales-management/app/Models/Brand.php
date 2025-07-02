@@ -38,4 +38,15 @@ class Brand extends Model
         return $query->where('is_active', true);
     }
 
+    public function getLogoAttribute($value)
+    {
+        if (!$value) {
+            return asset('images/default-logo.png'); // Fallback to a default image
+        }
+
+        return filter_var($value, FILTER_VALIDATE_URL)
+            ? $value
+            : asset('storage/' . $value);
+    }
+
 }

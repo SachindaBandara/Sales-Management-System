@@ -3,12 +3,25 @@ import AuthenticatedLayout from '../../../layouts/AuthenticatedLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
+interface Brand {
+    id: number;
+    name: string;
+    slug: string;
+    description: string | null;
+    logo: string | null;
+    is_active: boolean;
+}
+
+const props = defineProps<{
+    brand: Brand;
+}>();
+
 const form = ref({
-    name: '',
-    slug: '',
-    description: '',
+    name: props.brand.name,
+    slug: props.brand.slug,
+    description: props.brand.description || '',
     logo: null as File | null,
-    is_active: true,
+    is_active: props.brand.is_active,
 });
 
 const submit = () => {
@@ -20,12 +33,9 @@ const submit = () => {
     if (form.value.logo) {
         formData.append('logo', form.value.logo);
     }
+    formData.append('_method', 'PATCH');
 
-    router.post(route('admin.brands.store'), formData, {
-        onSuccess: () => {
-            form.value = { name: '', slug: '', description: '', logo: null, is_active: true };
-        },
-    });
+    router.post(route('admin.brands.update', props.brand.id), formData);
 };
 
 const handleFileChange = (event: Event) => {
@@ -35,12 +45,12 @@ const handleFileChange = (event: Event) => {
 </script>
 
 <template>
-    <Head title="Create Brand" />
+    <Head title="Edit Brand" />
 
     <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Create New Brand
+                Edit Brand
             </h2>
         </template>
 
@@ -77,6 +87,12 @@ const handleFileChange = (event: Event) => {
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Logo</label>
+                                    <img
+                                        v-if="props.brand.logo"
+                                        :src="props.brand.logo"
+                                        class="h-10 w-10 rounded-full object-cover mb-2"
+                                        alt="Current brand logo"
+                                    />
                                     <input
                                         type="file"
                                         accept="image/*"
@@ -99,7 +115,7 @@ const handleFileChange = (event: Event) => {
                                         type="submit"
                                         class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
                                     >
-                                        Create
+                                        Update
                                     </button>
                                     <a
                                         :href="route('admin.brands.index')"
