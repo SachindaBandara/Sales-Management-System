@@ -25,10 +25,10 @@
                     </SidebarLink>
 
                     <!-- User -->
-                    <SidebarLink :href="route('admin.users.index')" :active="route().current('admin.users.*')" icon="Users"> User </SidebarLink>
+                    <SidebarLink :href="route('admin.users.index')" :active="route().current('admin.users.*')" icon="Users"> Users </SidebarLink>
 
                     <!-- Brand -->
-
+                    <SidebarLink :href="route('admin.brands.index')" :active="route().current('admin.brands.*')" icon="Users"> Brands </SidebarLink>
                     <!-- Category -->
 
                     <!-- Product -->
