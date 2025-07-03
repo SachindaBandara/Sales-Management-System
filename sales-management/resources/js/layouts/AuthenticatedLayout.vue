@@ -35,6 +35,8 @@
                         icon="Users"> Categories </SidebarLink>
                         
                     <!-- Product -->
+                      <SidebarLink :href="route('admin.products.index')" :active="route().current('admin.products.*')"
+                        icon="Users"> Products </SidebarLink>
                 </nav>
             </div>
         </aside>
