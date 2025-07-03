@@ -235,7 +235,7 @@ const formatDate = (date: string): string => {
                                       ]"
                                 >
                                     <span v-if="link.label === '« Previous'">Previous</span>
-                                    <span v-else-if="link.label === 'Next »'">Next</span>
+                                    <span v-else-if="link.label === 'Next »'">Next </span>
                                     <span v-else>{{ link.label.replace(/(<([^>]+)>)/gi, '') }}</span>
                                 </Link>
                             </div>
