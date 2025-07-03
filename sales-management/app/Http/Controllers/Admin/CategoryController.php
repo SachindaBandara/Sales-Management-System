@@ -7,6 +7,7 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class CategoryController extends Controller
 {
@@ -38,7 +39,14 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        //
+           $parentCategories = Category::whereNull('parent_id')
+            ->active()
+            ->orderBy('name')
+            ->get();
+
+        return Inertia::render('Admin/Categories/Create', [
+            'parentCategories' => $parentCategories,
+        ]);
     }
 
     /**
@@ -46,7 +54,27 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'parent_id' => 'nullable|exists:categories,id',
+            'sort_order' => 'integer|min:0',
+            'is_active' => 'boolean',
+        ]);
+
+        $category = new Category($validated);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('categories', 'public');
+            $category->image = $path;
+            Log::info('Logo uploaded', ['path' => $path]);
+        }
+
+        $category->save();
+
+        return redirect()->route('admin.categories.index')
+            ->with('success', 'Category created successfully.');
     }
 
     /**

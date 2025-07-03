@@ -60,4 +60,14 @@ class Category extends Model
         }
         return $this->name;
     }
+     public function getLogoAttribute($value)
+    {
+        if (!$value) {
+            return asset('images/default-logo.png'); // Fallback to a default image
+        }
+
+        return filter_var($value, FILTER_VALIDATE_URL)
+            ? $value
+            : asset('storage/' . $value);
+    }
 }
