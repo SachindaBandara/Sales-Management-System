@@ -104,9 +104,13 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Product $product)
     {
-        //
+         $product->load(['brand', 'category']);
+
+        return Inertia::render('Admin/Products/Show', [
+            'product' => $product,
+        ]);
     }
 
     /**
@@ -188,6 +192,6 @@ class ProductController extends Controller
         return redirect()->route('admin.products.index')
             ->with('success', 'Product deleted successfully.');
     }
-    
+
 }
 
