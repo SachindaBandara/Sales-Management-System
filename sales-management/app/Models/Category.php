@@ -60,7 +60,7 @@ class Category extends Model
         }
         return $this->name;
     }
-     public function getLogoAttribute($value)
+     public function getImageAttribute($value)
     {
         if (!$value) {
             return asset('images/default-logo.png'); // Fallback to a default image
