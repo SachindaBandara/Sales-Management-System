@@ -52,7 +52,13 @@ class ProductController extends Controller
      */
     public function create()
     {
-        //
+        $brands = Brand::active()->orderBy('name')->get();
+        $categories = Category::active()->orderBy('name')->get();
+
+        return Inertia::render('Admin/Products/Create', [
+            'brands' => $brands,
+            'categories' => $categories,
+        ]);
     }
 
     /**
@@ -60,7 +66,39 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        //
+  $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'short_description' => 'nullable|string|max:500',
+            'sku' => 'required|string|unique:products,sku',
+            'price' => 'required|numeric|min:0',
+            'compare_price' => 'nullable|numeric|min:0',
+            'stock_quantity' => 'required|integer|min:0',
+            'track_quantity' => 'boolean',
+            'weight' => 'nullable|numeric|min:0',
+            'dimensions' => 'nullable|array',
+            'dimensions.length' => 'nullable|numeric|min:0',
+            'dimensions.width' => 'nullable|numeric|min:0',
+            'dimensions.height' => 'nullable|numeric|min:0',
+            'status' => 'required|in:active,draft,archived',
+            'brand_id' => 'nullable|exists:brands,id',
+            'category_id' => 'required|exists:categories,id',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        if ($request->hasFile('images')) {
+            $imagePaths = [];
+            foreach ($request->file('images') as $image) {
+                $imagePaths[] = $image->store('products', 'public');
+            }
+            $validated['images'] = $imagePaths;
+        }
+
+        Product::create($validated);
+
+        return redirect()->route('admin.products.index')
+            ->with('success', 'Product created successfully.');
     }
 
     /**
