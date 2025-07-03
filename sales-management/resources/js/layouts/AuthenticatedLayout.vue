@@ -1,36 +1,39 @@
 <template>
     <div class="min-h-screen bg-background">
         <!-- Admin Sidebar -->
-        <aside
-            v-if="$page.props.auth.user.is_admin"
-            :class="[
-                'fixed inset-y-0 left-0 z-50 w-64 transform border-r bg-card transition-transform duration-300 ease-in-out lg:translate-x-0',
-                sidebarOpen ? 'translate-x-0' : '-translate-x-full',
-            ]"
-        >
+        <aside v-if="$page.props.auth.user.is_admin" :class="[
+            'fixed inset-y-0 left-0 z-50 w-64 transform border-r bg-card transition-transform duration-300 ease-in-out lg:translate-x-0',
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+        ]">
             <div class="flex h-full flex-col">
                 <!-- Sidebar Header -->
                 <div class="flex h-16 items-center border-b px-6">
                     <Link :href="route('dashboard')" class="flex items-center space-x-2">
-                        <ApplicationLogo class="h-8 w-8" />
-                        <span class="text-lg font-semibold">Admin Panel</span>
+                    <ApplicationLogo class="h-8 w-8" />
+                    <span class="text-lg font-semibold">Admin Panel</span>
                     </Link>
                 </div>
 
                 <!-- Sidebar Navigation -->
                 <nav class="flex-1 space-y-1 p-4">
                     <!-- Dashboard -->
-                    <SidebarLink :href="route('admin.dashboard')" :active="route().current('admin.dashboard')" icon="LayoutDashboard">
+                    <SidebarLink :href="route('admin.dashboard')" :active="route().current('admin.dashboard')"
+                        icon="LayoutDashboard">
                         Dashboard
                     </SidebarLink>
 
                     <!-- User -->
-                    <SidebarLink :href="route('admin.users.index')" :active="route().current('admin.users.*')" icon="Users"> Users </SidebarLink>
+                    <SidebarLink :href="route('admin.users.index')" :active="route().current('admin.users.*')"
+                        icon="Users"> Users </SidebarLink>
 
                     <!-- Brand -->
-                    <SidebarLink :href="route('admin.brands.index')" :active="route().current('admin.brands.*')" icon="Users"> Brands </SidebarLink>
-                    <!-- Category -->
+                    <SidebarLink :href="route('admin.brands.index')" :active="route().current('admin.brands.*')"
+                        icon="Users"> Brands </SidebarLink>
 
+                    <!-- Category -->
+                    <SidebarLink :href="route('admin.categories.index')" :active="route().current('admin.categories.*')"
+                        icon="Users"> Categories </SidebarLink>
+                        
                     <!-- Product -->
                 </nav>
             </div>
@@ -39,28 +42,29 @@
         <!-- Main Content -->
         <div :class="[$page.props.auth.user.is_admin ? 'lg:ml-64' : '']">
             <!-- Header -->
-            <header class="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <header
+                class="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div class="flex h-16 items-center px-4 sm:px-6 lg:px-8">
                     <!-- Mobile Sidebar Toggle (Admin only) -->
-                    <Button v-if="$page.props.auth.user.is_admin" variant="ghost" size="icon" class="lg:hidden" @click="sidebarOpen = !sidebarOpen">
+                    <Button v-if="$page.props.auth.user.is_admin" variant="ghost" size="icon" class="lg:hidden"
+                        @click="sidebarOpen = !sidebarOpen">
                         <Menu class="h-5 w-5" />
                     </Button>
 
                     <!-- Logo (for customers or mobile admin) -->
-                    <div
-                        v-if="!$page.props.auth.user.is_admin || ($page.props.auth.user.is_admin && sidebarOpen)"
+                    <div v-if="!$page.props.auth.user.is_admin || ($page.props.auth.user.is_admin && sidebarOpen)"
                         class="flex items-center space-x-2"
-                        :class="[$page.props.auth.user.is_admin ? 'lg:hidden' : '']"
-                    >
+                        :class="[$page.props.auth.user.is_admin ? 'lg:hidden' : '']">
                         <Link :href="route('dashboard')" class="flex items-center space-x-2">
-                            <ApplicationLogo class="h-8 w-8" />
-                            <span class="text-lg font-semibold">App Name</span>
+                        <ApplicationLogo class="h-8 w-8" />
+                        <span class="text-lg font-semibold">App Name</span>
                         </Link>
                     </div>
 
                     <!-- Customer Navigation -->
                     <nav v-if="$page.props.auth.user.is_customer" class="ml-8 hidden space-x-6 md:flex">
-                        <NavLink :href="route('customer.dashboard')" :active="route().current('customer.dashboard')"> Dashboard </NavLink>
+                        <NavLink :href="route('customer.dashboard')" :active="route().current('customer.dashboard')">
+                            Dashboard </NavLink>
                     </nav>
 
                     <!-- Spacer -->
@@ -72,7 +76,8 @@
                             <DropdownMenuTrigger as-child>
                                 <Button variant="ghost" class="relative h-10 w-auto px-3">
                                     <div class="flex items-center space-x-3">
-                                        <Avatar :fallback="$page.props.auth.user.name.charAt(0).toUpperCase()" size="sm" />
+                                        <Avatar :fallback="$page.props.auth.user.name.charAt(0).toUpperCase()"
+                                            size="sm" />
                                         <div class="hidden text-left sm:block">
                                             <div class="text-sm font-medium">
                                                 {{ $page.props.auth.user.name }}
@@ -98,15 +103,16 @@
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem as-child>
                                     <Link :href="route('profile.edit')" class="flex items-center">
-                                        <User class="mr-2 h-4 w-4" />
-                                        Profile
+                                    <User class="mr-2 h-4 w-4" />
+                                    Profile
                                     </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem as-child>
-                                    <Link :href="route('logout')" method="post" as="button" class="flex w-full items-center text-red-600">
-                                        <LogOut class="mr-2 h-4 w-4" />
-                                        Log out
+                                    <Link :href="route('logout')" method="post" as="button"
+                                        class="flex w-full items-center text-red-600">
+                                    <LogOut class="mr-2 h-4 w-4" />
+                                    Log out
                                     </Link>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -117,25 +123,16 @@
                 <!-- Mobile Navigation -->
                 <div v-if="mobileMenuOpen" class="border-t bg-background md:hidden">
                     <div class="space-y-1 px-4 py-3">
-                        <MobileNavLink
-                            v-if="$page.props.auth.user.is_admin"
-                            :href="route('admin.dashboard')"
-                            :active="route().current('admin.dashboard')"
-                        >
+                        <MobileNavLink v-if="$page.props.auth.user.is_admin" :href="route('admin.dashboard')"
+                            :active="route().current('admin.dashboard')">
                             Dashboard
                         </MobileNavLink>
-                        <MobileNavLink
-                            v-if="$page.props.auth.user.is_admin"
-                            :href="route('admin.users.index')"
-                            :active="route().current('admin.users.*')"
-                        >
+                        <MobileNavLink v-if="$page.props.auth.user.is_admin" :href="route('admin.users.index')"
+                            :active="route().current('admin.users.*')">
                             User
                         </MobileNavLink>
-                        <MobileNavLink
-                            v-if="$page.props.auth.user.is_customer"
-                            :href="route('customer.dashboard')"
-                            :active="route().current('customer.dashboard')"
-                        >
+                        <MobileNavLink v-if="$page.props.auth.user.is_customer" :href="route('customer.dashboard')"
+                            :active="route().current('customer.dashboard')">
                             Dashboard
                         </MobileNavLink>
 
@@ -179,11 +176,8 @@
         </div>
 
         <!-- Mobile Sidebar Overlay -->
-        <div
-            v-if="sidebarOpen && $page.props.auth.user.is_admin"
-            class="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
-            @click="sidebarOpen = false"
-        />
+        <div v-if="sidebarOpen && $page.props.auth.user.is_admin"
+            class="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden" @click="sidebarOpen = false" />
     </div>
 </template>
 

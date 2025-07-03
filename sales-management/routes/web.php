@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
@@ -27,9 +28,11 @@ Route::middleware('auth')->get('/dashboard', function () {
     return redirect()->route('customer.dashboard');
 })->name('dashboard');
 
+
+
 // Admin Routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
     // User Management
     Route::resource('users', UserController::class);
@@ -38,7 +41,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Brand Management
     Route::resource('brands', BrandController::class);
     Route::patch('brands/{brand}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggle-status');
+
+    // Category Management
+    Route::resource('categories', CategoryController::class);
 });
+
+
 
 // Customer Routes
 Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->group(function () {
