@@ -64,6 +64,9 @@ const form = ref({
     images: [] as File[],
 });
 
+const imagePreviews = ref<string[]>(props.product.images);
+const removedImages = ref<string[]>([]);
+
 const submit = () => {
     const formData = new FormData();
     formData.append('name', form.value.name);
@@ -86,15 +89,41 @@ const submit = () => {
     form.value.images.forEach((image, index) => {
         formData.append(`images[${index}]`, image);
     });
+
+    // Optionally, you could send removed images to the backend if needed
+    // formData.append('removed_images', JSON.stringify(removedImages.value));
     
     formData.append('_method', 'PATCH');
 
-    router.post(route('admin.products.update', props.product.id), formData);
+    router.post(route('admin.products.update', props.product.id), formData, {
+        onSuccess: () => {
+            form.value.images = [];
+            imagePreviews.value = [];
+            removedImages.value = [];
+        },
+    });
 };
 
 const handleFileChange = (event: Event) => {
     const input = event.target as HTMLInputElement;
-    form.value.images = Array.from(input.files || []);
+    const files = Array.from(input.files || []);
+    
+    form.value.images = [...form.value.images, ...files];
+    imagePreviews.value = [
+        ...imagePreviews.value,
+        ...files.map(file => URL.createObjectURL(file))
+    ];
+};
+
+const removeImage = (index: number) => {
+    const removedImage = imagePreviews.value[index];
+    if (props.product.images.includes(removedImage)) {
+        removedImages.value.push(removedImage);
+    }
+    form.value.images = form.value.images.filter((_, i) => 
+        !imagePreviews.value[i].startsWith('blob:') || i !== index
+    );
+    imagePreviews.value = imagePreviews.value.filter((_, i) => i !== index);
 };
 </script>
 
@@ -270,22 +299,36 @@ const handleFileChange = (event: Event) => {
                                 </div>
                                 <div class="md:col-span-2">
                                     <label class="block text-sm font-medium text-gray-700">Images</label>
-                                    <div class="flex flex-wrap gap-2 mb-2">
-                                        <img
-                                            v-for="image in props.product.images"
-                                            :key="image"
-                                            :src="image"
-                                            class="h-10 w-10 rounded-full object-cover"
-                                            alt="Current product image"
-                                        />
+                                    <div class="mt-2 flex flex-wrap gap-4">
+                                        <div
+                                            v-for="(preview, index) in imagePreviews"
+                                            :key="index"
+                                            class="relative"
+                                        >
+                                            <img
+                                                :src="preview"
+                                                class="h-24 w-24 rounded-md object-cover"
+                                                alt="Image preview"
+                                            />
+                                            <button
+                                                type="button"
+                                                @click="removeImage(index)"
+                                                class="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
                                     </div>
                                     <input
                                         type="file"
                                         accept="image/*"
                                         multiple
-                                        class="mt-1 w-full border-gray-300 rounded-md shadow-sm"
+                                        class="mt-2 w-full border-gray-300 rounded-md shadow-sm"
                                         @change="handleFileChange"
                                     />
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        Select multiple images (JPEG, PNG, JPG, GIF, max 2MB each)
+                                    </p>
                                 </div>
                                 <div class="md:col-span-2 flex gap-2">
                                     <button

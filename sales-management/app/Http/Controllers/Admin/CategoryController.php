@@ -85,9 +85,9 @@ class CategoryController extends Controller
        $category->load([
             'parent',
             'children',
-            // 'products' => function ($query) {
-            //     $query->with('brand')->take(10);
-            // }
+            'products' => function ($query) {
+                $query->with('brand')->take(10);
+            }
         ]);
 
         return Inertia::render('Admin/Categories/Show', [

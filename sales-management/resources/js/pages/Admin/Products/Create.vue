@@ -40,6 +40,8 @@ const form = ref({
     images: [] as File[],
 });
 
+const imagePreviews = ref<string[]>([]);
+
 const submit = () => {
     const formData = new FormData();
     formData.append('name', form.value.name);
@@ -86,13 +88,22 @@ const submit = () => {
                 category_id: '',
                 images: []
             };
+            imagePreviews.value = [];
         },
     });
 };
 
 const handleFileChange = (event: Event) => {
     const input = event.target as HTMLInputElement;
-    form.value.images = Array.from(input.files || []);
+    const files = Array.from(input.files || []);
+    
+    form.value.images = files;
+    imagePreviews.value = files.map(file => URL.createObjectURL(file));
+};
+
+const removeImage = (index: number) => {
+    form.value.images = form.value.images.filter((_, i) => i !== index);
+    imagePreviews.value = imagePreviews.value.filter((_, i) => i !== index);
 };
 </script>
 
@@ -268,13 +279,36 @@ const handleFileChange = (event: Event) => {
                                 </div>
                                 <div class="md:col-span-2">
                                     <label class="block text-sm font-medium text-gray-700">Images</label>
+                                    <div class="mt-2 flex flex-wrap gap-4">
+                                        <div
+                                            v-for="(preview, index) in imagePreviews"
+                                            :key="index"
+                                            class="relative"
+                                        >
+                                            <img
+                                                :src="preview"
+                                                class="h-24 w-24 rounded-md object-cover"
+                                                alt="Image preview"
+                                            />
+                                            <button
+                                                type="button"
+                                                @click="removeImage(index)"
+                                                class="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                                            >
+                                                &times;
+                                            </button>
+                                        </div>
+                                    </div>
                                     <input
                                         type="file"
                                         accept="image/*"
                                         multiple
-                                        class="mt-1 w-full border-gray-300 rounded-md shadow-sm"
+                                        class="mt-2 w-full border-gray-300 rounded-md shadow-sm"
                                         @change="handleFileChange"
                                     />
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        Select multiple images (JPEG, PNG, JPG, GIF, max 2MB each)
+                                    </p>
                                 </div>
                                 <div class="md:col-span-2 flex gap-2">
                                     <button
