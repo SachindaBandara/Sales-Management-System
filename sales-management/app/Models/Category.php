@@ -43,6 +43,11 @@ class Category extends Model
         return $this->hasMany(Category::class, 'parent_id')->orderBy('sort_order');
     }
 
+     public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+
      public function scopeActive($query)
     {
         return $query->where('is_active', true);
