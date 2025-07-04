@@ -75,6 +75,10 @@ class BrandController extends Controller
      */
     public function show(Brand $brand)
     {
+        $brand->load(['products' => function ($query) {
+            $query->with('category')->take(10);
+        }]);
+
        return Inertia::render('Admin/Brands/Show', [
             'brand' => $brand,
         ]);
@@ -113,7 +117,7 @@ class BrandController extends Controller
             $validated['logo'] = $path;
             Log::info('Logo updated', ['path' => $path]);
         }
-            
+
 
         $brand->update($validated);
 
@@ -126,9 +130,9 @@ class BrandController extends Controller
      */
     public function destroy(Brand $brand)
     {
-        // if ($brand->products()->count() > 0) {
-        //     return back()->with('error', 'Cannot delete brand with associated products.');
-        // }
+        if ($brand->products()->count() > 0) {
+            return back()->with('error', 'Cannot delete brand with associated products.');
+        }
 
         if ($brand->logo && Storage::disk('public')->exists($brand->logo)) {
             Storage::disk('public')->delete($brand->logo);

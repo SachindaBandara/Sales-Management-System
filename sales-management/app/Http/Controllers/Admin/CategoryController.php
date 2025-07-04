@@ -134,7 +134,7 @@ class CategoryController extends Controller
             $validated['image'] = $path;
             Log::info('Image updated', ['path' => $path]);
         }
-            
+
 
         $category->update($validated);
 
@@ -147,6 +147,10 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
+         if ($category->products()->count() > 0 || $category->children()->count() > 0) {
+            return back()->with('error', 'Cannot delete category with associated products or subcategories.');
+        }
+        
         if ($category->image && Storage::disk('public')->exists($category->image)) {
             Storage::disk('public')->delete($category->image);
         }
