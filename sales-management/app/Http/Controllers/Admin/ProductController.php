@@ -9,6 +9,7 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -17,11 +18,11 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-         $products = Product::query()
+        $products = Product::query()
             ->with(['brand', 'category'])
             ->when($request->search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('sku', 'like', "%{$search}%");
+                    ->orWhere('sku', 'like', "%{$search}%");
             })
             ->when($request->status, function ($query, $status) {
                 $query->where('status', $status);
@@ -35,6 +36,13 @@ class ProductController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10)
             ->withQueryString();
+
+            // Transform the products to include image URLs
+        $products->getCollection()->transform(function ($product) {
+            $product->image_urls = $product->image_urls; // This will trigger the accessor
+            $product->first_image_url = $product->first_image_url; // This will trigger the accessor
+            return $product;
+        });
 
         $brands = Brand::active()->orderBy('name')->get();
         $categories = Category::active()->orderBy('name')->get();
@@ -66,7 +74,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-  $validated = $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'short_description' => 'nullable|string|max:500',
@@ -87,15 +95,20 @@ class ProductController extends Controller
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
+         // Handle image uploads
+        $imagePaths = [];
         if ($request->hasFile('images')) {
-            $imagePaths = [];
             foreach ($request->file('images') as $image) {
-                $imagePaths[] = $image->store('products', 'public');
+                $path = $image->store('products', 'public');
+                $imagePaths[] = $path;
             }
-            $validated['images'] = $imagePaths;
+            Log::info('Images uploaded', ['paths' => $imagePaths]);
         }
 
-        Product::create($validated);
+        // Create product
+        $product = new Product($validated);
+        $product->images = $imagePaths; // This will be cast to JSON automatically
+        $product->save();
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Product created successfully.');
@@ -106,7 +119,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-         $product->load(['brand', 'category']);
+        $product->load(['brand', 'category']);
 
         return Inertia::render('Admin/Products/Show', [
             'product' => $product,
@@ -154,17 +167,20 @@ class ProductController extends Controller
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
+         // Handle new image uploads
         if ($request->hasFile('images')) {
             // Delete old images
             if ($product->images) {
-                foreach ($product->images as $image) {
-                    Storage::disk('public')->delete($image);
+                foreach ($product->images as $oldImage) {
+                    Storage::disk('public')->delete($oldImage);
                 }
             }
 
+            // Upload new images
             $imagePaths = [];
             foreach ($request->file('images') as $image) {
-                $imagePaths[] = $image->store('products', 'public');
+                $path = $image->store('products', 'public');
+                $imagePaths[] = $path;
             }
             $validated['images'] = $imagePaths;
         }
@@ -180,7 +196,7 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-       // Delete associated images
+        // Delete associated images
         if ($product->images) {
             foreach ($product->images as $image) {
                 Storage::disk('public')->delete($image);
@@ -192,6 +208,4 @@ class ProductController extends Controller
         return redirect()->route('admin.products.index')
             ->with('success', 'Product deleted successfully.');
     }
-
 }
-

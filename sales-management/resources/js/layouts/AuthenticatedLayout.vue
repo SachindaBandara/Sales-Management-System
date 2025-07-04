@@ -33,7 +33,7 @@
                     <!-- Category -->
                     <SidebarLink :href="route('admin.categories.index')" :active="route().current('admin.categories.*')"
                         icon="Users"> Categories </SidebarLink>
-                        
+
                     <!-- Product -->
                       <SidebarLink :href="route('admin.products.index')" :active="route().current('admin.products.*')"
                         icon="Users"> Products </SidebarLink>
@@ -67,6 +67,11 @@
                     <nav v-if="$page.props.auth.user.is_customer" class="ml-8 hidden space-x-6 md:flex">
                         <NavLink :href="route('customer.dashboard')" :active="route().current('customer.dashboard')">
                             Dashboard </NavLink>
+                    </nav>
+
+                     <nav v-if="$page.props.auth.user.is_customer" class="ml-8 hidden space-x-6 md:flex">
+                        <NavLink :href="route('customer.home')" :active="route().current('customer.home')">
+                            Home </NavLink>
                     </nav>
 
                     <!-- Spacer -->

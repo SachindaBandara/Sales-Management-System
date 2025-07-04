@@ -38,11 +38,17 @@ class Product extends Model
         'meta_data' => 'array',
         'track_quantity' => 'boolean',
     ];
+      protected $appends = [
+        'image_urls',
+        'first_image_url',
+        'discount_percentage',
+        'is_in_stock'
+    ];
 
-    protected static function boot()
+ protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($product) {
             if (empty($product->slug)) {
                 $product->slug = Str::slug($product->name);
@@ -81,14 +87,28 @@ class Product extends Model
         return $this->stock_quantity > 0;
     }
 
-      public function getImageAttribute($value)
+    // Accessor to get full image URLs
+    public function getImageUrlsAttribute()
     {
-        if (!$value) {
-            return asset('images/default-logo.png'); // Fallback to a default image
+        if (!$this->images || !is_array($this->images)) {
+            return [];
         }
 
-        return filter_var($value, FILTER_VALIDATE_URL)
-            ? $value
-            : asset('storage/' . $value);
+        return array_map(function($image) {
+            return asset('storage/' . $image);
+        }, $this->images);
+    }
+
+    // Get first image URL
+    public function getFirstImageUrlAttribute()
+    {
+        $urls = $this->image_urls;
+        return $urls ? $urls[0] : asset('images/placeholder.jpg');
+    }
+
+    // Method to get thumbnail URL (optional - for performance)
+    public function getThumbnailUrlAttribute()
+    {
+        return $this->first_image_url;
     }
 }

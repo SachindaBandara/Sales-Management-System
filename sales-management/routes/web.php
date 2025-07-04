@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use Illuminate\Foundation\Application;
@@ -55,7 +56,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
 // Customer Routes
 Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->group(function () {
-    Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
+    Route::get('dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
+    Route::get('home', [CustomerProductController::class, 'index'])->name('home');
+    Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 });
 
 require __DIR__ . '/settings.php';
