@@ -37,7 +37,7 @@ class ProductController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-            // Transform the products to include image URLs
+       // Transform the products to include image URLs
         $products->getCollection()->transform(function ($product) {
             $product->image_urls = $product->image_urls; // This will trigger the accessor
             $product->first_image_url = $product->first_image_url; // This will trigger the accessor
@@ -95,7 +95,7 @@ class ProductController extends Controller
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-         // Handle image uploads
+       // Handle image uploads
         $imagePaths = [];
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
@@ -166,8 +166,7 @@ class ProductController extends Controller
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-
-         // Handle new image uploads
+// Handle new image uploads
         if ($request->hasFile('images')) {
             // Delete old images
             if ($product->images) {

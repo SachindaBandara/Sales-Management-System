@@ -27,7 +27,7 @@
                         icon="Users"> Users </SidebarLink>
 
                     <!-- Brand -->
-                    <SidebarLink :href="route('admin.brands.index')" :active="route().current('admin.brands.*')"
+                    <SidebarLink :href="route('admin.brands.index')" :active="route().current('n.brands.*')"
                         icon="Users"> Brands </SidebarLink>
 
                     <!-- Category -->
@@ -35,7 +35,7 @@
                         icon="Users"> Categories </SidebarLink>
 
                     <!-- Product -->
-                      <SidebarLink :href="route('admin.products.index')" :active="route().current('admin.products.*')"
+                    <SidebarLink :href="route('admin.products.index')" :active="route().current('admin.products.*')"
                         icon="Users"> Products </SidebarLink>
                 </nav>
             </div>
@@ -66,19 +66,21 @@
                     <!-- Customer Navigation -->
                     <nav v-if="$page.props.auth.user.is_customer" class="ml-8 hidden space-x-6 md:flex">
                         <NavLink :href="route('customer.dashboard')" :active="route().current('customer.dashboard')">
-                            Dashboard </NavLink>
-                    </nav>
-
-                     <nav v-if="$page.props.auth.user.is_customer" class="ml-8 hidden space-x-6 md:flex">
+                            Dashboard
+                        </NavLink>
                         <NavLink :href="route('customer.home')" :active="route().current('customer.home')">
-                            Home </NavLink>
+                            Home
+                        </NavLink>
+                        <NavLink :href="route('customer.cart.index')" :active="route().current('customer.cart.*')">
+                            Cart
+                        </NavLink>
                     </nav>
 
                     <!-- Spacer -->
                     <div class="flex-1" />
 
                     <!-- User Menu -->
-                    <div class="flex items-center space-x-4">
+                    <div DETAILS="flex items-center space-x-4">
                         <DropdownMenu>
                             <DropdownMenuTrigger as-child>
                                 <Button variant="ghost" class="relative h-10 w-auto px-3">
@@ -142,12 +144,14 @@
                             :active="route().current('customer.dashboard')">
                             Dashboard
                         </MobileNavLink>
-
-                        <!-- Brand -->
-
-                        <!-- Category -->
-
-                        <!-- Product -->
+                        <MobileNavLink v-if="$page.props.auth.user.is_customer" :href="route('customer.home')"
+                            :active="route().current('customer.home')">
+                            Home
+                        </MobileNavLink>
+                        <MobileNavLink v-if="$page.props.auth.user.is_customer" :href="route('customer.cart.index')"
+                            :active="route().current('customer.cart.*')">
+                            Cart
+                        </MobileNavLink>
                     </div>
                 </div>
             </header>

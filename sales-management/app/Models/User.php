@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Cart; 
 
 class User extends Authenticatable
 {
@@ -51,7 +52,7 @@ class User extends Authenticatable
         ];
     }
 
-       // Role helper methods
+    // Role helper methods
     public function isAdmin()
     {
         return $this->role === 'admin';
@@ -61,12 +62,12 @@ class User extends Authenticatable
     {
         return $this->role === 'customer';
     }
-     public function hasRole(string $role): bool
+    public function hasRole(string $role): bool
     {
         return $this->role === $role;
     }
 
-     // Scopes
+    // Scopes
     public function scopeAdmins($query)
     {
         return $query->where('role', 'admin');
@@ -80,5 +81,15 @@ class User extends Authenticatable
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    // cart relationship
+    public function cart()
+    {
+        return $this->hasMany(Cart::class);
+    }
+    public function getCartItemsCountAttribute()
+    {
+        return $this->cart()->sum('quantity');
     }
 }

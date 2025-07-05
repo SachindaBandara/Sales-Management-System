@@ -90,20 +90,33 @@ class Product extends Model
     // Accessor to get full image URLs
     public function getImageUrlsAttribute()
     {
-        if (!$this->images || !is_array($this->images)) {
+        // Handle null or empty images
+        if (!$this->images) {
             return [];
         }
 
+        // Handle case where images is stored as JSON string
+        $images = $this->images;
+        if (is_string($images)) {
+            $images = json_decode($images, true);
+        }
+
+        // Ensure we have an array
+        if (!is_array($images)) {
+            return [];
+        }
+
+        // Filter out empty values and create URLs
         return array_map(function($image) {
             return asset('storage/' . $image);
-        }, $this->images);
+        }, array_filter($images));
     }
 
     // Get first image URL
     public function getFirstImageUrlAttribute()
     {
         $urls = $this->image_urls;
-        return $urls ? $urls[0] : asset('images/placeholder.jpg');
+        return !empty($urls) ? $urls[0] : asset('images/placeholder.jpg');
     }
 
     // Method to get thumbnail URL (optional - for performance)
