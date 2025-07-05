@@ -43,12 +43,7 @@
                             No products found matching your criteria.
                         </div>
 
-                        <!-- Pagination Component -->
-                        <Pagination
-                            v-if="products.data.length"
-                            :products="products"
-                            @change-page="changePage"
-                        />
+
                     </div>
                 </div>
             </div>
@@ -63,7 +58,7 @@ import { ref, watch } from 'vue';
 import debounce from 'lodash/debounce';
 import ProductFilters from '@/components/Product/ProductFilters.vue';
 import ProductCard from '@/components/Product/ProductCard.vue';
-import Pagination from '@/components/Product/Pagination.vue';
+
 
 interface User {
     name: string;
@@ -143,11 +138,6 @@ const applyFilters = debounce(() => {
     );
 }, 300);
 
-const changePage = (url: string | null) => {
-    if (url) {
-        router.get(url, {}, { preserveState: true, preserveScroll: true });
-    }
-};
 
 const addToCart = (productId: number) => {
     addingToCart.value[productId] = true;
