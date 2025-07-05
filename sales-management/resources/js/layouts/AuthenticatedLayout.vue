@@ -71,9 +71,6 @@
                         <NavLink :href="route('customer.home')" :active="route().current('customer.home')">
                             Home
                         </NavLink>
-                        <NavLink :href="route('customer.cart.index')" :active="route().current('customer.cart.*')">
-                            Cart
-                        </NavLink>
                     </nav>
 
                     <!-- Spacer -->
@@ -147,10 +144,6 @@
                         <MobileNavLink v-if="$page.props.auth.user.is_customer" :href="route('customer.home')"
                             :active="route().current('customer.home')">
                             Home
-                        </MobileNavLink>
-                        <MobileNavLink v-if="$page.props.auth.user.is_customer" :href="route('customer.cart.index')"
-                            :active="route().current('customer.cart.*')">
-                            Cart
                         </MobileNavLink>
                     </div>
                 </div>

@@ -61,9 +61,6 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
     Route::get('home', [CustomerProductController::class, 'index'])->name('home');
     Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
-    // Cart Management
-    Route::resource('cart', CartController::class);
-
 });
 
 require __DIR__ . '/settings.php';
