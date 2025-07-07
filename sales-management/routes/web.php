@@ -3,8 +3,8 @@
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\ImageController;
 use App\Http\Controllers\Admin\ProductController;
-use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
@@ -49,8 +49,61 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('categories', CategoryController::class);
     Route::patch('categories/{category}/toggle-status', [CategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
 
-    // Product Management
+      /*
+    |--------------------------------------------------------------------------
+    | Product Management Routes
+    |--------------------------------------------------------------------------
+    |
+    | These routes handle all operations for products including upload,
+    | delete, edit, view, bulk action and statistic .
+    |
+    */
     Route::resource('products', ProductController::class);
+     // Custom Product Routes
+    Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
+    Route::get('products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+
+    // Additional Product Actions
+    Route::patch('products/{product}/toggle-status', [ProductController::class, 'toggleStatus'])
+        ->name('products.toggle-status');
+
+    Route::post('products/{product}/duplicate', [ProductController::class, 'duplicate'])
+        ->name('products.duplicate');
+
+    Route::get('products-statistics', [ProductController::class, 'statistics'])
+        ->name('products.statistics');
+
+    Route::post('products/bulk-action', [ProductController::class, 'bulkAction'])
+        ->name('products.bulk-action');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Product Image Management Routes
+    |--------------------------------------------------------------------------
+    |
+    | These routes handle all image operations for products including upload,
+    | delete, reorder, and setting primary images.
+    |
+    */
+    Route::prefix('products/{product}/images')->name('products.images.')->group(function () {
+        // Get all images for a product
+        Route::get('/', [ImageController::class, 'index'])->name('index');
+
+        // Upload new images
+        Route::post('/upload', [ImageController::class, 'upload'])->name('upload');
+
+        // Delete a specific image
+        Route::delete('/delete', [ImageController::class, 'delete'])->name('delete');
+
+        // Delete all images
+        Route::delete('/delete-all', [ImageController::class, 'deleteAll'])->name('delete-all');
+
+        // Reorder images
+        Route::patch('/reorder', [ImageController::class, 'reorder'])->name('reorder');
+
+        // Set primary image
+        Route::patch('/set-primary', [ImageController::class, 'setPrimary'])->name('set-primary');
+    });
 });
 
 
@@ -59,7 +112,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->group(function () {
     Route::get('dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
     Route::get('home', [CustomerProductController::class, 'index'])->name('home');
-    Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
+    Route::get('/products/{product}', [CustomerProductController::class, 'show'])->name('products.show');
 
 });
 

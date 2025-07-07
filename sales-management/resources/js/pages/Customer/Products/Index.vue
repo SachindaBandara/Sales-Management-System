@@ -56,8 +56,8 @@ import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import debounce from 'lodash/debounce';
-import ProductFilters from '@/components/Product/ProductFilters.vue';
-import ProductCard from '@/components/Product/ProductCard.vue';
+import ProductFilters from '@/components/Product/Customer/ProductFilters.vue';
+import ProductCard from '@/components/Product/Customer/ProductCard.vue';
 
 
 interface User {

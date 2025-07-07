@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
 {
-   use HasFactory;
+    use HasFactory;
 
     protected $fillable = [
         'name',
@@ -38,14 +39,16 @@ class Product extends Model
         'meta_data' => 'array',
         'track_quantity' => 'boolean',
     ];
-      protected $appends = [
+
+    protected $appends = [
         'image_urls',
         'first_image_url',
         'discount_percentage',
-        'is_in_stock'
+        'is_in_stock',
+        'image_count'
     ];
 
- protected static function boot()
+    protected static function boot()
     {
         parent::boot();
 
@@ -53,6 +56,11 @@ class Product extends Model
             if (empty($product->slug)) {
                 $product->slug = Str::slug($product->name);
             }
+        });
+
+        // Clean up images when product is deleted
+        static::deleting(function ($product) {
+            $product->deleteAllImages();
         });
     }
 
@@ -85,6 +93,11 @@ class Product extends Model
             return true;
         }
         return $this->stock_quantity > 0;
+    }
+
+    public function getImageCountAttribute()
+    {
+        return count($this->images ?? []);
     }
 
     // Accessor to get full image URLs
@@ -123,5 +136,146 @@ class Product extends Model
     public function getThumbnailUrlAttribute()
     {
         return $this->first_image_url;
+    }
+
+    // Enhanced image management methods
+
+    /**
+     * Add images to product
+     */
+    public function addImages(array $imagePaths)
+    {
+        $currentImages = $this->images ?? [];
+        $newImages = array_merge($currentImages, $imagePaths);
+
+        $this->update(['images' => $newImages]);
+
+        return $this;
+    }
+
+    /**
+     * Remove specific image from product
+     */
+    public function removeImage($imagePath)
+    {
+        $currentImages = $this->images ?? [];
+
+        // Remove from storage
+        if (Storage::disk('public')->exists($imagePath)) {
+            Storage::disk('public')->delete($imagePath);
+        }
+
+        // Remove from array
+        $updatedImages = array_values(array_filter($currentImages, function($image) use ($imagePath) {
+            return $image !== $imagePath;
+        }));
+
+        $this->update(['images' => $updatedImages]);
+
+        return $this;
+    }
+
+    /**
+     * Delete all images for product
+     */
+    public function deleteAllImages()
+    {
+        $currentImages = $this->images ?? [];
+
+        // Delete from storage
+        foreach ($currentImages as $imagePath) {
+            if (Storage::disk('public')->exists($imagePath)) {
+                Storage::disk('public')->delete($imagePath);
+            }
+        }
+
+        // Clear from database
+        $this->update(['images' => []]);
+
+        return $this;
+    }
+
+    /**
+     * Set primary image (move to first position)
+     */
+    public function setPrimaryImage($imagePath)
+    {
+        $currentImages = $this->images ?? [];
+
+        if (!in_array($imagePath, $currentImages)) {
+            return false;
+        }
+
+        // Remove from current position
+        $filteredImages = array_filter($currentImages, function($image) use ($imagePath) {
+            return $image !== $imagePath;
+        });
+
+        // Add to beginning
+        $reorderedImages = array_merge([$imagePath], array_values($filteredImages));
+
+        $this->update(['images' => $reorderedImages]);
+
+        return $this;
+    }
+
+    /**
+     * Reorder images
+     */
+    public function reorderImages(array $newOrder)
+    {
+        $currentImages = $this->images ?? [];
+
+        // Validate that all images in new order exist in current images
+        foreach ($newOrder as $imagePath) {
+            if (!in_array($imagePath, $currentImages)) {
+                return false;
+            }
+        }
+
+        $this->update(['images' => $newOrder]);
+
+        return $this;
+    }
+
+    /**
+     * Get image at specific index
+     */
+    public function getImageAtIndex($index)
+    {
+        $urls = $this->image_urls;
+        return isset($urls[$index]) ? $urls[$index] : null;
+    }
+
+    /**
+     * Check if product has images
+     */
+    public function hasImages()
+    {
+        return !empty($this->images);
+    }
+
+    /**
+     * Get image information with metadata
+     */
+    public function getImageInfo()
+    {
+        $images = $this->images ?? [];
+        $info = [];
+
+        foreach ($images as $index => $imagePath) {
+            $fullPath = storage_path('app/public/' . $imagePath);
+
+            $info[] = [
+                'path' => $imagePath,
+                'url' => asset('storage/' . $imagePath),
+                'index' => $index,
+                'is_primary' => $index === 0,
+                'exists' => file_exists($fullPath),
+                'size' => file_exists($fullPath) ? filesize($fullPath) : 0,
+            ];
+        }
+
+        return $info;
     }
 }

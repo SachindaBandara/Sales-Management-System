@@ -5,16 +5,8 @@
                 <Button variant="ghost" class="relative h-10 w-auto px-3">
                     <div class="flex items-center space-x-3">
                         <Avatar :fallback="$page.props.auth.user.name.charAt(0).toUpperCase()" size="sm" />
-                        <div class="hidden text-left sm:block">
-                            <div class="text-sm font-medium">
-                                {{ $page.props.auth.user.name }}
-                            </div>
-                            <div class="text-xs text-muted-foreground">
-                                {{ $page.props.auth.user.email }}
-                            </div>
-                        </div>
                         <Badge variant="secondary" class="ml-2">
-                            {{ $page.props.auth.user.role }}
+                            {{ $page.props.auth.user.name }}
                         </Badge>
                         <ChevronDown class="h-4 w-4 text-muted-foreground" />
                     </div>

@@ -8,7 +8,6 @@ use App\Models\Brand;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
@@ -37,10 +36,9 @@ class ProductController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-       // Transform the products to include image URLs
+        // Transform the products to include image information
         $products->getCollection()->transform(function ($product) {
-            $product->image_urls = $product->image_urls; // This will trigger the accessor
-            $product->first_image_url = $product->first_image_url; // This will trigger the accessor
+            // These accessors are already appended in the model
             return $product;
         });
 
@@ -91,27 +89,35 @@ class ProductController extends Controller
             'status' => 'required|in:active,draft,archived',
             'brand_id' => 'nullable|exists:brands,id',
             'category_id' => 'required|exists:categories,id',
-            'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'meta_data' => 'nullable|array',
         ]);
 
-       // Handle image uploads
-        $imagePaths = [];
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('products', 'public');
-                $imagePaths[] = $path;
-            }
-            Log::info('Images uploaded', ['paths' => $imagePaths]);
+        try {
+            // Create product without images first
+            $product = Product::create($validated);
+
+            Log::info('Product created', [
+                'product_id' => $product->id,
+                'name' => $product->name,
+                'sku' => $product->sku
+            ]);
+
+            // Note: Images should be uploaded separately using the ImageController
+            // This allows for better handling of image uploads and more flexibility
+
+            return redirect()->route('admin.products.index')
+                ->with('success', 'Product created successfully. You can now upload images using the image management section.');
+
+        } catch (\Exception $e) {
+            Log::error('Product creation failed', [
+                'error' => $e->getMessage(),
+                'validated_data' => $validated
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Failed to create product. Please try again.'])
+                ->withInput();
         }
-
-        // Create product
-        $product = new Product($validated);
-        $product->images = $imagePaths; // This will be cast to JSON automatically
-        $product->save();
-
-        return redirect()->route('admin.products.index')
-            ->with('success', 'Product created successfully.');
     }
 
     /**
@@ -123,6 +129,7 @@ class ProductController extends Controller
 
         return Inertia::render('Admin/Products/Show', [
             'product' => $product,
+            'image_info' => $product->getImageInfo(), // Enhanced image information
         ]);
     }
 
@@ -138,6 +145,7 @@ class ProductController extends Controller
             'product' => $product,
             'brands' => $brands,
             'categories' => $categories,
+            'image_info' => $product->getImageInfo(), // Enhanced image information
         ]);
     }
 
@@ -163,31 +171,36 @@ class ProductController extends Controller
             'status' => 'required|in:active,draft,archived',
             'brand_id' => 'nullable|exists:brands,id',
             'category_id' => 'required|exists:categories,id',
-            'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'meta_data' => 'nullable|array',
         ]);
-// Handle new image uploads
-        if ($request->hasFile('images')) {
-            // Delete old images
-            if ($product->images) {
-                foreach ($product->images as $oldImage) {
-                    Storage::disk('public')->delete($oldImage);
-                }
-            }
 
-            // Upload new images
-            $imagePaths = [];
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('products', 'public');
-                $imagePaths[] = $path;
-            }
-            $validated['images'] = $imagePaths;
+        try {
+            // Update product data (excluding images)
+            $product->update($validated);
+
+            Log::info('Product updated', [
+                'product_id' => $product->id,
+                'name' => $product->name,
+                'sku' => $product->sku
+            ]);
+
+            // Note: Images should be managed separately using the ImageController
+            // This provides better control and error handling for image operations
+
+            return redirect()->route('admin.products.index')
+                ->with('success', 'Product updated successfully.');
+
+        } catch (\Exception $e) {
+            Log::error('Product update failed', [
+                'product_id' => $product->id,
+                'error' => $e->getMessage(),
+                'validated_data' => $validated
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Failed to update product. Please try again.'])
+                ->withInput();
         }
-
-        $product->update($validated);
-
-        return redirect()->route('admin.products.index')
-            ->with('success', 'Product updated successfully.');
     }
 
     /**
@@ -195,16 +208,186 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        // Delete associated images
-        if ($product->images) {
-            foreach ($product->images as $image) {
-                Storage::disk('public')->delete($image);
-            }
+        try {
+            $productId = $product->id;
+            $productName = $product->name;
+
+            // Delete the product (images will be automatically deleted via model event)
+            $product->delete();
+
+            Log::info('Product deleted', [
+                'product_id' => $productId,
+                'name' => $productName
+            ]);
+
+            return redirect()->route('admin.products.index')
+                ->with('success', 'Product and all associated images deleted successfully.');
+
+        } catch (\Exception $e) {
+            Log::error('Product deletion failed', [
+                'product_id' => $product->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Failed to delete product. Please try again.']);
         }
+    }
 
-        $product->delete();
+    /**
+     * Toggle product status
+     */
+    public function toggleStatus(Product $product)
+    {
+        try {
+            $newStatus = $product->status === 'active' ? 'draft' : 'active';
+            $product->update(['status' => $newStatus]);
 
-        return redirect()->route('admin.products.index')
-            ->with('success', 'Product deleted successfully.');
+            Log::info('Product status toggled', [
+                'product_id' => $product->id,
+                'old_status' => $product->status,
+                'new_status' => $newStatus
+            ]);
+
+            return redirect()->back()
+                ->with('success', "Product status changed to {$newStatus}.");
+
+        } catch (\Exception $e) {
+            Log::error('Product status toggle failed', [
+                'product_id' => $product->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Failed to toggle product status.']);
+        }
+    }
+
+    /**
+     * Duplicate a product
+     */
+    public function duplicate(Product $product)
+    {
+        try {
+            // Create a copy of the product
+            $newProduct = $product->replicate();
+            $newProduct->name = $product->name . ' (Copy)';
+            $newProduct->sku = $product->sku . '-copy-' . time();
+            $newProduct->status = 'draft';
+            $newProduct->images = []; // Don't copy images
+            $newProduct->save();
+
+            Log::info('Product duplicated', [
+                'original_product_id' => $product->id,
+                'new_product_id' => $newProduct->id
+            ]);
+
+            return redirect()->route('admin.products.edit', $newProduct)
+                ->with('success', 'Product duplicated successfully. Images were not copied - you can upload new images separately.');
+
+        } catch (\Exception $e) {
+            Log::error('Product duplication failed', [
+                'product_id' => $product->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Failed to duplicate product.']);
+        }
+    }
+
+    /**
+     * Get product statistics
+     */
+    public function statistics()
+    {
+        try {
+            $stats = [
+                'total_products' => Product::count(),
+                'active_products' => Product::where('status', 'active')->count(),
+                'draft_products' => Product::where('status', 'draft')->count(),
+                'archived_products' => Product::where('status', 'archived')->count(),
+                'out_of_stock' => Product::where('track_quantity', true)
+                    ->where('stock_quantity', '<=', 0)->count(),
+                'products_with_images' => Product::whereNotNull('images')
+                    ->where('images', '!=', '[]')->count(),
+                'products_without_images' => Product::where(function($query) {
+                    $query->whereNull('images')
+                        ->orWhere('images', '[]');
+                })->count(),
+            ];
+
+            return response()->json([
+                'success' => true,
+                'statistics' => $stats
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to get product statistics', [
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve statistics'
+            ], 500);
+        }
+    }
+
+    /**
+     * Bulk operations on products
+     */
+    public function bulkAction(Request $request)
+    {
+        $validated = $request->validate([
+            'action' => 'required|in:delete,activate,deactivate,archive',
+            'product_ids' => 'required|array|min:1',
+            'product_ids.*' => 'exists:products,id'
+        ]);
+
+        try {
+            $products = Product::whereIn('id', $validated['product_ids']);
+            $count = $products->count();
+
+            switch ($validated['action']) {
+                case 'delete':
+                    $products->delete();
+                    $message = "{$count} products deleted successfully.";
+                    break;
+
+                case 'activate':
+                    $products->update(['status' => 'active']);
+                    $message = "{$count} products activated successfully.";
+                    break;
+
+                case 'deactivate':
+                    $products->update(['status' => 'draft']);
+                    $message = "{$count} products deactivated successfully.";
+                    break;
+
+                case 'archive':
+                    $products->update(['status' => 'archived']);
+                    $message = "{$count} products archived successfully.";
+                    break;
+            }
+
+            Log::info('Bulk action performed', [
+                'action' => $validated['action'],
+                'product_ids' => $validated['product_ids'],
+                'count' => $count
+            ]);
+
+            return redirect()->back()->with('success', $message);
+
+        } catch (\Exception $e) {
+            Log::error('Bulk action failed', [
+                'action' => $validated['action'],
+                'product_ids' => $validated['product_ids'],
+                'error' => $e->getMessage()
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Bulk action failed. Please try again.']);
+        }
     }
 }
