@@ -1,4 +1,3 @@
-// composables/useCart.ts
 import { ref, computed } from 'vue'
 import { toast } from 'vue-sonner'
 
@@ -33,7 +32,7 @@ export const useCart = () => {
   // Computed properties
   const isEmpty = computed(() => Object.keys(cartItems.value).length === 0)
   const itemCount = computed(() => Object.keys(cartItems.value).length)
-  const totalItems = computed(() => 
+  const totalItems = computed(() =>
     Object.values(cartItems.value).reduce((sum, item) => sum + item.quantity, 0)
   )
 
@@ -45,7 +44,7 @@ export const useCart = () => {
   // Add item to cart
   const addToCart = async (productId: number, quantity: number = 1) => {
     loading.value = true
-    
+
     try {
       const response = await fetch(route('customer.cart.add', productId), {
         method: 'POST',
@@ -55,9 +54,9 @@ export const useCart = () => {
         },
         body: JSON.stringify({ quantity })
       })
-      
+
       const data = await response.json()
-      
+
       if (data.success) {
         cartCount.value = data.cartCount
         cartTotals.value = data.cartTotals
@@ -72,7 +71,7 @@ export const useCart = () => {
         })
         return false
       }
-    } catch{
+    } catch {
       toast.error('Error', {
         description: 'Network error. Please try again.',
       })
@@ -83,11 +82,11 @@ export const useCart = () => {
   }
 
   // Update cart item quantity
-  const updateCartItem = async (id: string, quantity: number) => {
+  const updateQuantity = async (id: string, quantity: number) => {
     if (quantity < 1 || quantity > 99) return false
-    
+
     loading.value = true
-    
+
     try {
       const response = await fetch(route('customer.cart.update'), {
         method: 'PATCH',
@@ -97,9 +96,9 @@ export const useCart = () => {
         },
         body: JSON.stringify({ id, quantity })
       })
-      
+
       const data = await response.json()
-      
+
       if (data.success) {
         if (cartItems.value[id]) {
           cartItems.value[id].quantity = quantity
@@ -116,7 +115,7 @@ export const useCart = () => {
         })
         return false
       }
-    } catch{
+    } catch {
       toast.error('Error', {
         description: 'Network error. Please try again.',
       })
@@ -129,7 +128,7 @@ export const useCart = () => {
   // Remove item from cart
   const removeFromCart = async (id: string) => {
     loading.value = true
-    
+
     try {
       const response = await fetch(route('customer.cart.remove'), {
         method: 'DELETE',
@@ -139,9 +138,9 @@ export const useCart = () => {
         },
         body: JSON.stringify({ id })
       })
-      
+
       const data = await response.json()
-      
+
       if (data.success) {
         delete cartItems.value[id]
         cartTotals.value = data.cartTotals
@@ -169,7 +168,7 @@ export const useCart = () => {
   // Clear entire cart
   const clearCart = async () => {
     loading.value = true
-    
+
     try {
       const response = await fetch(route('customer.cart.clear'), {
         method: 'DELETE',
@@ -178,9 +177,9 @@ export const useCart = () => {
           'X-CSRF-TOKEN': getCSRFToken(),
         },
       })
-      
+
       const data = await response.json()
-      
+
       if (data.success) {
         cartItems.value = {}
         cartTotals.value = data.cartTotals
@@ -227,15 +226,15 @@ export const useCart = () => {
     cartItems: computed(() => cartItems.value),
     cartTotals: computed(() => cartTotals.value),
     loading: computed(() => loading.value),
-    
+
     // Computed
     isEmpty,
     itemCount,
     totalItems,
-    
+
     // Methods
     addToCart,
-    updateCartItem,
+    updateQuantity, // Renamed from updateCartItem
     removeFromCart,
     clearCart,
     refreshCart,

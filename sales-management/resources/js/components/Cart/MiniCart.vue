@@ -5,12 +5,15 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { ShoppingCart, X, Trash2 } from 'lucide-vue-next'
+import { ShoppingCart, X, Eye } from 'lucide-vue-next'
 import { useCart } from '@/composables/useCart'
+import CartItemList from './CartItemsList.vue'
 
-const { cartItems, cartTotals, cartCount, removeFromCart, isEmpty } = useCart()
+const { cartItems, cartTotals, cartCount, removeFromCart, updateQuantity, isEmpty } = useCart()
 
 const isOpen = ref(false)
+const updatingItems = ref(new Set<string>())
+const loading = ref(false)
 
 const toggleCart = () => {
   isOpen.value = !isOpen.value
@@ -18,6 +21,30 @@ const toggleCart = () => {
 
 const closeCart = () => {
   isOpen.value = false
+}
+
+const handleUpdateQuantity = async (id: string, quantity: number) => {
+  loading.value = true
+  updatingItems.value.add(id)
+
+  try {
+    await updateQuantity(id, quantity)
+  } finally {
+    updatingItems.value.delete(id)
+    loading.value = false
+  }
+}
+
+const handleRemoveItem = async (id: string) => {
+  loading.value = true
+  updatingItems.value.add(id)
+
+  try {
+    await removeFromCart(id)
+  } finally {
+    updatingItems.value.delete(id)
+    loading.value = false
+  }
 }
 </script>
 
@@ -42,7 +69,7 @@ const closeCart = () => {
     <!-- Mini Cart Dropdown -->
     <div
       v-if="isOpen"
-      class="absolute right-0 top-full mt-2 w-80 z-50"
+      class="absolute right-0 top-full mt-2 w-96 z-50"
     >
       <Card class="shadow-lg border">
         <CardHeader class="flex flex-row items-center justify-between pb-2">
@@ -63,35 +90,17 @@ const closeCart = () => {
             <p class="text-gray-500">Your cart is empty</p>
           </div>
 
-          <!-- Cart Items -->
+          <!-- Cart Items using CartItemList -->
           <div v-else>
-            <ScrollArea class="h-64">
-              <div class="space-y-2 p-4">
-                <div
-                  v-for="(item, id) in cartItems"
-                  :key="id"
-                  class="flex items-center gap-3 p-2 rounded-md hover:bg-gray-50"
-                >
-                  <img
-                    :src="item.image || '/images/placeholder.png'"
-                    :alt="item.name"
-                    class="w-12 h-12 object-cover rounded"
-                  />
-                  <div class="flex-1 min-w-0">
-                    <h4 class="font-medium text-sm truncate">{{ item.name }}</h4>
-                    <p class="text-xs text-gray-500">
-                      {{ item.quantity }} × LKR {{ item.price.toLocaleString() }}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    @click="removeFromCart(id)"
-                    class="text-red-600 hover:text-red-700"
-                  >
-                    <Trash2 class="h-4 w-4" />
-                  </Button>
-                </div>
+            <ScrollArea class="max-h-80">
+              <div class="p-4">
+                <CartItemList
+                  :cart="cartItems"
+                  :updating-items="updatingItems"
+                  :loading="loading"
+                  @update-quantity="handleUpdateQuantity"
+                  @remove-item="handleRemoveItem"
+                />
               </div>
             </ScrollArea>
 
@@ -109,14 +118,15 @@ const closeCart = () => {
                 <span>Total</span>
                 <span>LKR {{ cartTotals.total.toLocaleString() }}</span>
               </div>
-              
+
               <div class="space-y-2 pt-2">
                 <Link
                   :href="route('customer.cart')"
                   class="w-full inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition-colors"
                   @click="closeCart"
                 >
-                  View Cart
+                  <Eye class="h-4 w-4 mr-2" />
+                  View All Items
                 </Link>
                 <Button
                   class="w-full"

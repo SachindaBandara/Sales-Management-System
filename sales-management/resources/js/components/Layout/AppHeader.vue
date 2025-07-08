@@ -44,6 +44,19 @@
             <!-- Spacer -->
             <div class="flex-1" />
 
+            <!-- Customer Cart Components -->
+            <div v-if="$page.props.auth.user.is_customer" class="flex items-center space-x-4">
+                <!-- Mini Cart (for larger screens) -->
+                <div class="hidden md:block">
+                    <MiniCart />
+                </div>
+
+                <!-- Cart Icon (for mobile screens) -->
+                <div class="md:hidden">
+                    <CartIcon />
+                </div>
+            </div>
+
             <!-- User Menu -->
             <UserMenu />
         </div>
@@ -79,6 +92,13 @@
                 >
                     Home
                 </MobileNavLink>
+                <MobileNavLink
+                    v-if="$page.props.auth.user.is_customer"
+                    :href="route('customer.cart')"
+                    :active="route().current('customer.cart')"
+                >
+                    Cart
+                </MobileNavLink>
             </div>
         </div>
     </header>
@@ -91,6 +111,8 @@ import Button from '@/components/ui/button/Button.vue';
 import NavLink from '@/components/NavLink.vue';
 import MobileNavLink from '@/components/MobileNavLink.vue';
 import UserMenu from '@/components/Layout/UserMenu.vue';
+import CartIcon from '@/components/Cart/CartIcon.vue';
+import MiniCart from '@/components/Cart/MiniCart.vue';
 import { Menu } from 'lucide-vue-next';
 import { defineProps, defineEmits } from 'vue';
 

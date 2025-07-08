@@ -17,7 +17,7 @@ const showBadge = computed(() => cartCount.value > 0)
 </script>
 
 <template>
-  <Link 
+  <Link
     :href="route('customer.cart')"
     class="relative inline-flex items-center p-2 text-gray-600 hover:text-gray-900 transition-colors"
   >
