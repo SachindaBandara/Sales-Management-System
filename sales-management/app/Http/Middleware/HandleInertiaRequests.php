@@ -57,6 +57,10 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
+             'cart' => [
+                'count' => fn () => count($request->session()->get('cart', [])),
+                'items' => fn () => $request->session()->get('cart', []),
+            ],
             'ziggy' => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),

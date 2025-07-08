@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ImageController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
@@ -49,7 +50,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('categories', CategoryController::class);
     Route::patch('categories/{category}/toggle-status', [CategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
 
-      /*
+    /*
     |--------------------------------------------------------------------------
     | Product Management Routes
     |--------------------------------------------------------------------------
@@ -59,7 +60,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     |
     */
     Route::resource('products', ProductController::class);
-     // Custom Product Routes
+    // Custom Product Routes
     Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
     Route::get('products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
 
@@ -114,6 +115,13 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
     Route::get('home', [CustomerProductController::class, 'index'])->name('home');
     Route::get('/products/{product}', [CustomerProductController::class, 'show'])->name('products.show');
 
+    // Cart routes
+    Route::get('cart', [CartController::class, 'cart'])->name('cart');
+    Route::post('cart/add/{id}', [CartController::class, 'addToCart'])->name('cart.add');
+    Route::patch('cart/update', [CartController::class, 'updateCart'])->name('cart.update');
+    Route::delete('cart/remove', [CartController::class, 'removeFromCart'])->name('cart.remove');
+    Route::delete('cart/clear', [CartController::class, 'clearCart'])->name('cart.clear');
+    Route::get('cart/count', [CartController::class, 'getCartCount'])->name('cart.count');
 });
 
 require __DIR__ . '/settings.php';

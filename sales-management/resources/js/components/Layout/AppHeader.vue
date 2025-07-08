@@ -35,6 +35,10 @@
                  <NavLink :href="route('customer.home')" :active="route().current('customer.home')">
                     Home
                 </NavLink>
+
+                 <NavLink :href="route('customer.cart')" :active="route().current('customer.cart')">
+                    Cart
+                </NavLink>
             </nav>
 
             <!-- Spacer -->

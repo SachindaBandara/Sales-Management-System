@@ -143,7 +143,7 @@ const addToCart = (productId: number) => {
     addingToCart.value[productId] = true;
 
     router.post(
-        route('customer.cart.store'),
+        route('customer.add.to.cart', productId),
         {
             product_id: productId,
             quantity: 1,
