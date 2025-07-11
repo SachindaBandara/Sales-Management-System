@@ -62,23 +62,26 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     |
     */
 
+    // Product Management
     Route::resource('products', ProductController::class);
+
     // Custom Product Routes
     Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
+
+    // Edit a product
     Route::get('products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
 
     // Additional Product Actions
-    Route::patch('products/{product}/toggle-status', [ProductController::class, 'toggleStatus'])
-        ->name('products.toggle-status');
+    Route::patch('products/{product}/toggle-status', [ProductController::class, 'toggleStatus'])->name('products.toggle-status');
 
-    Route::post('products/{product}/duplicate', [ProductController::class, 'duplicate'])
-        ->name('products.duplicate');
+    // Duplicate a product
+    Route::post('products/{product}/duplicate', [ProductController::class, 'duplicate'])->name('products.duplicate');
 
-    Route::get('products-statistics', [ProductController::class, 'statistics'])
-        ->name('products.statistics');
+    // Product Statistics
+    Route::get('products-statistics', [ProductController::class, 'statistics'])->name('products.statistics');
 
-    Route::post('products/bulk-action', [ProductController::class, 'bulkAction'])
-        ->name('products.bulk-action');
+    // Bulk actions for products
+    Route::post('products/bulk-action', [ProductController::class, 'bulkAction'])->name('products.bulk-action');
 
     /*
     |--------------------------------------------------------------------------
@@ -117,19 +120,69 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
 // Customer Routes
 Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->group(function () {
+
+    // Customer Dashboard
     Route::get('dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
+    // Customer Home
     Route::get('home', [CustomerProductController::class, 'index'])->name('home');
+    // Show specific product
     Route::get('/products/{product}', [CustomerProductController::class, 'show'])->name('products.show');
+
+       /*
+    |--------------------------------------------------------------------------
+    | Cart Routes
+    |--------------------------------------------------------------------------
+    |
+    | These routes handle all image operations for products including upload,
+    | delete, reorder, and setting primary images.
+    |
+    */
 
     // Cart routes
     Route::get('cart', [CartController::class, 'cart'])->name('cart');
+
+    // Cart actions
     Route::post('cart/add/{id}', [CartController::class, 'addToCart'])->name('cart.add');
+
+    // Update cart item quantity
     Route::patch('cart/update', [CartController::class, 'updateCart'])->name('cart.update');
+
+    // Remove item from cart
     Route::delete('cart/remove', [CartController::class, 'removeFromCart'])->name('cart.remove');
+
+    // Clear cart
     Route::delete('cart/clear', [CartController::class, 'clearCart'])->name('cart.clear');
+
+    // Get cart count
     Route::get('cart/count', [CartController::class, 'getCartCount'])->name('cart.count');
 
-    
+     /*
+    |--------------------------------------------------------------------------
+    | Order Management Routes
+    |--------------------------------------------------------------------------
+    |
+    | These routes handle all image operations for products including upload,
+    | delete, reorder, and setting primary images.
+    |
+    */
+
+    // List all orders
+    Route::get('/orders', [CustomerOrderController::class, 'index'])->name('orders');
+
+    // Show specific order details
+    Route::get('/orders/{order}', [CustomerOrderController::class, 'show'])->name('orders.show');
+
+    // Show checkout page
+    Route::get('/checkout', [CustomerOrderController::class, 'checkout'])->name('checkout');
+
+    // Process order placement
+    Route::post('/orders', [CustomerOrderController::class, 'store'])->name('orders.store');
+
+    // Cancel an order
+    Route::post('/orders/{order}/cancel', [CustomerOrderController::class, 'cancel'])->name('orders.cancel');
+
+
+
 
 });
 
