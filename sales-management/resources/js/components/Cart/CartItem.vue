@@ -1,55 +1,66 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Trash2, Minus, Plus } from 'lucide-vue-next'
+import { ref, watch } from 'vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Trash2, Minus, Plus } from 'lucide-vue-next';
 
 interface CartItem {
-  name: string
-  quantity: number
-  price: number
-  image: string
-  product_id: number
+  name: string;
+  quantity: number;
+  price: number;
+  image: string;
+  product_id: number;
 }
 
 interface Props {
-  id: string
-  item: CartItem
-  updating: boolean
-  disabled: boolean
+  id: string;
+  item: CartItem;
+  updating: boolean;
+  disabled: boolean;
 }
 
 interface Emits {
-  (e: 'update-quantity', id: string, quantity: number): void
-  (e: 'remove-item', id: string): void
+  (e: 'update-quantity', id: string, quantity: number): void;
+  (e: 'remove-item', id: string): void;
 }
 
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
+
+// Local reactive state for quantity input
+const localQuantity = ref(props.item.quantity);
+
+// Sync localQuantity with prop changes
+watch(() => props.item.quantity, (newValue) => {
+  localQuantity.value = newValue;
+});
+
+// Watch localQuantity and emit valid updates
+watch(localQuantity, (newValue) => {
+  const parsedValue = parseInt(String(newValue));
+  if (!isNaN(parsedValue) && parsedValue >= 1 && parsedValue <= 99) {
+    emit('update-quantity', props.id, parsedValue);
+  } else {
+    // Reset to last valid value if input is invalid
+    localQuantity.value = props.item.quantity;
+  }
+});
 
 const incrementQuantity = () => {
   if (props.item.quantity < 99) {
-    emit('update-quantity', props.id, props.item.quantity + 1)
+    localQuantity.value = props.item.quantity + 1;
   }
-}
+};
 
 const decrementQuantity = () => {
   if (props.item.quantity > 1) {
-    emit('update-quantity', props.id, props.item.quantity - 1)
+    localQuantity.value = props.item.quantity - 1;
   }
-}
-
-const onQuantityChange = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const newQuantity = parseInt(target.value)
-
-  if (newQuantity && newQuantity >= 1 && newQuantity <= 99) {
-    emit('update-quantity', props.id, newQuantity)
-  }
-}
+};
 
 const handleRemove = () => {
-  emit('remove-item', props.id)
-}
+  emit('remove-item', props.id);
+};
 </script>
 
 <template>
@@ -83,13 +94,12 @@ const handleRemove = () => {
         <Minus class="h-4 w-4" />
       </Button>
       <Input
-        :value="item.quantity"
+        v-model.number="localQuantity"
         type="number"
         min="1"
         max="99"
         class="w-20 text-center"
         :disabled="updating"
-        @change="onQuantityChange"
       />
       <Button
         variant="outline"
