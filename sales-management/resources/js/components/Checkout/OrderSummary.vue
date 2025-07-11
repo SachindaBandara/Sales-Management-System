@@ -1,5 +1,3 @@
-OrderSUmmary:
-
 <template>
   <div class="bg-white shadow rounded-lg p-6 sticky top-8">
     <h2 class="text-lg font-medium text-gray-900 mb-6">Order Summary</h2>

@@ -1,5 +1,3 @@
-Checkout:
-
 <script lang="ts">
 import { defineComponent, ref, reactive } from 'vue';
 import { router } from '@inertiajs/vue3';
