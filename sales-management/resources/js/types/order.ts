@@ -53,3 +53,37 @@ export interface PaginatedOrders {
   per_page: number;
   total: number;
 }
+
+export interface CartItem {
+    name: string;
+    sku?: string;
+    price: number;
+    quantity: number;
+    image?: string;
+}
+
+export interface CartTotals {
+    subtotal: number;
+    tax: number;
+    taxRate: number;
+    total: number;
+}
+
+export interface User {
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    phone?: string;
+}
+
+export interface FormData {
+    billing_address: Address;
+    shipping_address: Address;
+    shipping_same_as_billing: boolean;
+    payment_method: 'cash_on_delivery' | 'card' | 'paypal';
+    notes: string;
+}
+
+export interface Errors {
+    [key: string]: string;
+}
