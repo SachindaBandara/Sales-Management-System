@@ -87,3 +87,52 @@ export interface FormData {
 export interface Errors {
     [key: string]: string;
 }
+
+export interface OrderItem {
+  id: number;
+  product_name: string;
+  product_sku: string;
+  product_price: number;
+  quantity: number;
+  total_price: number;
+  product_snapshot: {
+    name: string;
+    sku: string;
+    price: number;
+    image: string;
+    description: string;
+  };
+}
+
+export interface Address {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  address_line_1: string;
+  address_line_2?: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
+}
+
+export interface Order {
+  id: number;
+  order_number: string;
+  status: string;
+  payment_status: string;
+  payment_method: string;
+  total_amount: number;
+  subtotal: number;
+  tax_amount: number;
+  shipping_amount: number;
+  discount_amount: number;
+  created_at: string;
+  updated_at: string;
+  billing_address: Address;
+  shipping_address: Address;
+  notes?: string;
+  items: OrderItem[];
+  user: User;
+}
