@@ -5,6 +5,7 @@ import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ShoppingBag, Trash2 } from 'lucide-vue-next'
+import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
 import CartItemsList from'../../components/Cart/CartItemsList.vue'
 import OrderSummary from '../../components/Cart/OrderSummary.vue'
 import EmptyCart from '../../components/Cart/EmptyCart.vue'
@@ -191,6 +192,7 @@ const clearCart = async () => {
 </script>
 
 <template>
+<AuthenticatedLayout>
   <div class="container mx-auto py-8 px-4">
     <div class="max-w-6xl mx-auto">
       <!-- Header -->
@@ -236,4 +238,5 @@ const clearCart = async () => {
       </div>
     </div>
   </div>
+</AuthenticatedLayout>
 </template>

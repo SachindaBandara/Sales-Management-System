@@ -39,6 +39,10 @@
                  <NavLink :href="route('customer.cart')" :active="route().current('customer.cart')">
                     Cart
                 </NavLink>
+
+                <NavLink :href="route('customer.orders')" :active="route().current('customer.orders')">
+                    Orders
+                </NavLink>
             </nav>
 
             <!-- Spacer -->

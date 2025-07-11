@@ -4,11 +4,13 @@ use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ImageController;
+use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
+use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -59,6 +61,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     | delete, edit, view, bulk action and statistic .
     |
     */
+
     Route::resource('products', ProductController::class);
     // Custom Product Routes
     Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
@@ -86,6 +89,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     | delete, reorder, and setting primary images.
     |
     */
+
     Route::prefix('products/{product}/images')->name('products.images.')->group(function () {
         // Get all images for a product
         Route::get('/', [ImageController::class, 'index'])->name('index');
@@ -105,6 +109,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         // Set primary image
         Route::patch('/set-primary', [ImageController::class, 'setPrimary'])->name('set-primary');
     });
+
+
 });
 
 
@@ -122,6 +128,9 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
     Route::delete('cart/remove', [CartController::class, 'removeFromCart'])->name('cart.remove');
     Route::delete('cart/clear', [CartController::class, 'clearCart'])->name('cart.clear');
     Route::get('cart/count', [CartController::class, 'getCartCount'])->name('cart.count');
+
+    
+
 });
 
 require __DIR__ . '/settings.php';

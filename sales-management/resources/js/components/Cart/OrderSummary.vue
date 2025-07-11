@@ -53,9 +53,14 @@ defineProps<Props>()
         </div>
       </CardContent>
       <CardFooter class="flex-col space-y-2">
-        <Button class="w-full" size="lg">
-          Proceed to Checkout
-        </Button>
+        <Link
+          :href="getRouteUrl('customer.checkout', '/checkout')"
+          class="w-full"
+        >
+          <Button class="w-full" size="lg">
+            Proceed to Checkout
+          </Button>
+        </Link>
         <Link
           :href="getRouteUrl('customer.home', '/home')"
           class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"

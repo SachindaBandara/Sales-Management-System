@@ -62,6 +62,7 @@ class User extends Authenticatable
     {
         return $this->role === 'customer';
     }
+    
     public function hasRole(string $role): bool
     {
         return $this->role === $role;
@@ -81,5 +82,62 @@ class User extends Authenticatable
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    //Orders relationship
+     public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    // public function getFullAddressAttribute(): string
+    // {
+    //     if (is_array($this->address)) {
+    //         return implode(', ', array_filter([
+    //             $this->address['street'] ?? '',
+    //             $this->city,
+    //             $this->state,
+    //             $this->postal_code,
+    //             $this->country,
+    //         ]));
+    //     }
+
+    //     return implode(', ', array_filter([
+    //         $this->address,
+    //         $this->city,
+    //         $this->state,
+    //         $this->postal_code,
+    //         $this->country,
+    //     ]));
+    // }
+
+    public function getIsCustomerAttribute(): bool
+    {
+        return !$this->is_admin;
+    }
+
+    public function getOrdersCountAttribute(): int
+    {
+        return $this->orders()->count();
+    }
+
+    public function getTotalSpentAttribute(): float
+    {
+        return $this->orders()->where('payment_status', 'paid')->sum('total_amount');
+    }
+
+    public function getFormattedTotalSpentAttribute(): string
+    {
+        return '$' . number_format($this->total_spent, 2);
+    }
+
+    public function hasOrders(): bool
+    {
+        return $this->orders()->exists();
+    }
+
+    public function recentOrders($limit = 5)
+    {
+        return $this->orders()->with('items.product')->latest()->limit($limit)->get();
     }
 }

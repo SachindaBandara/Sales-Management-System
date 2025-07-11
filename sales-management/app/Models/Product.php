@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
@@ -45,7 +47,10 @@ class Product extends Model
         'first_image_url',
         'discount_percentage',
         'is_in_stock',
-        'image_count'
+        'image_count',
+        'formatted_price',
+        'formatted_compare_price',
+        'stock_status',
     ];
 
     protected static function boot()
@@ -277,5 +282,91 @@ class Product extends Model
         }
 
         return $info;
+    }
+
+    //Order management methods can be added here as needed
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function getFormattedPriceAttribute(): string
+    {
+        return 'LKR' . number_format($this->price, 2);
+    }
+
+    public function getFormattedComparePriceAttribute(): string
+    {
+        return $this->compare_price ? '$' . number_format($this->compare_price, 2) : '';
+    }
+
+    public function getStockStatusAttribute(): string
+    {
+        if (!$this->track_quantity) {
+            return 'In Stock';
+        }
+
+        if ($this->stock_quantity <= 0) {
+            return 'Out of Stock';
+        }
+
+        if ($this->stock_quantity <= 10) {
+            return 'Low Stock';
+        }
+
+        return 'In Stock';
+    }
+
+    public function scopeInStock($query)
+    {
+        return $query->where(function ($q) {
+            $q->where('track_quantity', false)
+              ->orWhere('stock_quantity', '>', 0);
+        });
+    }
+
+    public function scopeByCategory($query, $categoryId)
+    {
+        return $query->where('category_id', $categoryId);
+    }
+
+    public function scopeByBrand($query, $brandId)
+    {
+        return $query->where('brand_id', $brandId);
+    }
+
+    public function decreaseStock($quantity): bool
+    {
+        if (!$this->track_quantity) {
+            return true;
+        }
+
+        if ($this->stock_quantity >= $quantity) {
+            $this->decrement('stock_quantity', $quantity);
+            return true;
+        }
+
+        return false;
+    }
+
+    public function increaseStock($quantity): void
+    {
+        if ($this->track_quantity) {
+            $this->increment('stock_quantity', $quantity);
+        }
+    }
+
+    public function getTotalSoldAttribute(): int
+    {
+        return $this->orderItems()->whereHas('order', function ($query) {
+            $query->where('payment_status', 'paid');
+        })->sum('quantity');
+    }
+
+    public function getRevenueAttribute(): float
+    {
+        return $this->orderItems()->whereHas('order', function ($query) {
+            $query->where('payment_status', 'paid');
+        })->sum('total_price');
     }
 }
