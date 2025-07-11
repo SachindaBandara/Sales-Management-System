@@ -24,7 +24,7 @@ interface Product {
   id: number
   name: string
   price: number
-  image?: string
+  first_image_url?: string // Updated to use first_image_url instead of image
   category?: Category
   brand?: Brand
   is_in_stock: boolean
@@ -44,9 +44,9 @@ const quantity = ref(1)
 // Handle add to cart action using Inertia.js
 const addToCart = async () => {
   if (addingToCart.value) return
-  
+
   addingToCart.value = true
-  
+
   try {
     router.post(route('customer.cart.add', props.product.id), {
       quantity: quantity.value
@@ -97,8 +97,8 @@ const decrementQuantity = () => {
   <div class="group border rounded-lg p-4 hover:shadow-lg transition-all duration-200 bg-white">
     <div class="relative overflow-hidden rounded-md mb-4">
       <img
-        :src="product.image || '/images/placeholder.png'"
-        :alt="product.name"
+        :src="product.first_image_url || '/images/placeholder.png'"
+        :alt="product.name || 'Product Image'"
         class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
       />
       <div v-if="!product.is_in_stock" class="absolute inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">

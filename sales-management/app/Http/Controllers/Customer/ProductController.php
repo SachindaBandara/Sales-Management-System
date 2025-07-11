@@ -19,7 +19,7 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        
+
         $products = Product::query()
             ->with(['brand', 'category'])
             ->active()
@@ -61,10 +61,9 @@ class ProductController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-             // Transform the products to include image URLs
         $products->getCollection()->transform(function ($product) {
-            $product->image_urls = $product->image_urls; // This will trigger the accessor
-            $product->first_image_url = $product->first_image_url; // This will trigger the accessor
+            $product->image_urls = $product->image_urls; // Triggers the accessor
+            $product->first_image_url = $product->first_image_url; // Triggers the accessor
             return $product;
         });
 
@@ -78,6 +77,7 @@ class ProductController extends Controller
             'categories' => $categories,
             'filters' => $request->only(['search', 'category', 'brand', 'min_price', 'max_price', 'sort']),
         ]);
+    
     }
 
     /**
