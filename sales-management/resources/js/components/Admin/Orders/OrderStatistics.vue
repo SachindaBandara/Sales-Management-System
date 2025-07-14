@@ -53,20 +53,7 @@
 <script setup lang="ts">
 import { Card, CardContent } from '@/components/ui/card'
 import { ShoppingCart, Clock, DollarSign, Calendar } from 'lucide-vue-next'
-
-interface Statistics {
-  total_orders: number
-  pending_orders: number
-  processing_orders: number
-  shipped_orders: number
-  delivered_orders: number
-  cancelled_orders: number
-  todays_orders: number
-  this_month_orders: number
-  total_revenue: number
-  todays_revenue: number
-  this_month_revenue: number
-}
+import { Statistics } from '@/types/order'
 
 defineProps<{
   statistics: Statistics

@@ -10,7 +10,7 @@
       </div>
 
       <OrderStatistics :statistics="statistics" />
-      <OrderFilters :filters="filters" @apply-filters="applyFilters" @clear-filters="clearFilters" />
+      <OrderFilters v-model:filters="filters" @apply-filters="applyFilters" @clear-filters="clearFilters" />
       <OrdersTable
         :orders="orders.data"
         @view-order="viewOrder"
@@ -40,65 +40,15 @@ import OrderFilters from '@/components/Admin/Orders/OrderFilter.vue'
 import OrdersTable from '@/components/Admin/Orders/OrdersTable.vue'
 import OrderPagination from '@/components/Admin/Orders/OrderPagination.vue'
 import { Download } from 'lucide-vue-next'
+import { OrdersPagination, Statistics, Filters } from '@/types/order'
 
-interface User {
-  id: number
-  name: string
-  email: string
-}
-
-interface Order {
-  id: number
-  order_number: string
-  user: User
-  status: string
-  payment_status: string
-  subtotal: number
-  tax_amount: number
-  total_amount: number
-  items_count: number
-  created_at: string
-}
-
-interface OrdersPagination {
-  data: Order[]
-  current_page: number
-  from: number
-  to: number
-  total: number
-  prev_page_url: string | null
-  next_page_url: string | null
-}
-
-interface Statistics {
-  total_orders: number
-  pending_orders: number
-  processing_orders: number
-  shipped_orders: number
-  delivered_orders: number
-  cancelled_orders: number
-  todays_orders: number
-  this_month_orders: number
-  total_revenue: number
-  todays_revenue: number
-  this_month_revenue: number
-}
-
-interface Props {
+const props = defineProps<{
   orders: OrdersPagination
   statistics: Statistics
-  filters: {
-    status?: string
-    payment_status?: string
-    search?: string
-    date_from?: string
-    date_to?: string
-  }
-}
+  filters: Filters
+}>()
 
-const props = defineProps<Props>()
-
-const filters = reactive({
+const filters = reactive<Filters>({
   status: props.filters.status || '',
   payment_status: props.filters.payment_status || '',
   search: props.filters.search || '',
@@ -120,7 +70,7 @@ const applyFilters = () => {
 }
 
 const clearFilters = () => {
-  (Object.keys(filters) as Array<keyof typeof filters>).forEach(key => {
+  (Object.keys(filters) as Array<keyof Filters>).forEach(key => {
     filters[key] = ''
   })
   applyFilters()
@@ -194,7 +144,7 @@ const deleteOrder = async (id: number) => {
 }
 
 const exportOrders = () => {
-  const params = new URLSearchParams(filters).toString()
+  const params = new URLSearchParams(filters as any).toString()
   window.location.href = route('admin.orders.export') + (params ? `?${params}` : '')
 }
 </script>

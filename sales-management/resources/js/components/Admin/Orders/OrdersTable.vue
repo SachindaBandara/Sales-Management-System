@@ -92,25 +92,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Eye, MoreHorizontal } from 'lucide-vue-next'
-
-interface User {
-  id: number
-  name: string
-  email: string
-}
-
-interface Order {
-  id: number
-  order_number: string
-  user: User
-  status: string
-  payment_status: string
-  subtotal: number
-  tax_amount: number
-  total_amount: number
-  items_count: number
-  created_at: string
-}
+import { Order } from '@/types/order'
 
 defineProps<{
   orders: Order[]

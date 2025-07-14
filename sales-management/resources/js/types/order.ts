@@ -1,3 +1,12 @@
+export interface User {
+    id: number;
+    name: string;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    phone?: string;
+}
+
 export interface OrderItem {
   product_id: number;
   product_name: string;
@@ -30,6 +39,7 @@ export interface Address {
 export interface Order {
   id: number;
   order_number: string;
+  user: User
   user_id: number;
   status: string;
   subtotal: number;
@@ -44,6 +54,7 @@ export interface Order {
   notes?: string;
   created_at: string;
   items: OrderItem[];
+  items_count: number
 }
 
 export interface PaginatedOrders {
@@ -67,13 +78,6 @@ export interface CartTotals {
     tax: number;
     taxRate: number;
     total: number;
-}
-
-export interface User {
-    first_name?: string;
-    last_name?: string;
-    email?: string;
-    phone?: string;
 }
 
 export interface FormData {
@@ -117,22 +121,34 @@ export interface Address {
   country: string;
 }
 
-export interface Order {
-  id: number;
-  order_number: string;
-  status: string;
-  payment_status: string;
-  payment_method: string;
-  total_amount: number;
-  subtotal: number;
-  tax_amount: number;
-  shipping_amount: number;
-  discount_amount: number;
-  created_at: string;
-  updated_at: string;
-  billing_address: Address;
-  shipping_address: Address;
-  notes?: string;
-  items: OrderItem[];
-  user: User;
+export interface OrdersPagination {
+  data: Order[]
+  current_page: number
+  from: number
+  to: number
+  total: number
+  prev_page_url: string | null
+  next_page_url: string | null
+}
+
+export interface Statistics {
+  total_orders: number
+  pending_orders: number
+  processing_orders: number
+  shipped_orders: number
+  delivered_orders: number
+  cancelled_orders: number
+  todays_orders: number
+  this_month_orders: number
+  total_revenue: number
+  todays_revenue: number
+  this_month_revenue: number
+}
+
+export interface Filters {
+  status?: string
+  payment_status?: string
+  search?: string
+  date_from?: string
+  date_to?: string
 }

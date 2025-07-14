@@ -82,14 +82,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-
-interface Filters {
-  status?: string
-  payment_status?: string
-  search?: string
-  date_from?: string
-  date_to?: string
-}
+import { Filters } from '@/types/order'
 
 const props = defineProps<{
   filters: Filters
@@ -101,21 +94,17 @@ const emit = defineEmits<{
   (e: 'clear-filters'): void
 }>()
 
-// Create a local reactive copy of filters to avoid mutating props
 const localFilters = reactive<Filters>({ ...props.filters })
 
-// Sync localFilters with props.filters when props.filters changes
 watch(() => props.filters, (newFilters) => {
   Object.assign(localFilters, newFilters)
 }, { deep: true })
 
-// Emit updates to parent when localFilters change
 const handleInput = () => {
   emit('update:filters', { ...localFilters })
   emit('apply-filters')
 }
 
-// Handle clear filters action
 const handleClearFilters = () => {
   Object.keys(localFilters).forEach((key) => {
     localFilters[key as keyof Filters] = ''

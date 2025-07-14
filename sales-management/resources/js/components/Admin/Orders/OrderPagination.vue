@@ -26,16 +26,7 @@
 
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
-
-interface OrdersPagination {
-  data: any[]
-  current_page: number
-  from: number
-  to: number
-  total: number
-  prev_page_url: string | null
-  next_page_url: string | null
-}
+import { OrdersPagination } from '@/types/order'
 
 defineProps<{
   orders: OrdersPagination
