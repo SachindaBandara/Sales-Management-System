@@ -51,6 +51,13 @@
                 >
                     Products
                 </SidebarLink>
+                   <SidebarLink
+                    :href="route('admin.orders.index')"
+                    :active="route().current('admin.orders.*')"
+                    icon="Users"
+                >
+                    Orders
+                </SidebarLink>
             </nav>
         </div>
     </aside>

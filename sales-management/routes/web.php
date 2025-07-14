@@ -113,6 +113,36 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::patch('/set-primary', [ImageController::class, 'setPrimary'])->name('set-primary');
     });
 
+    /*
+    |--------------------------------------------------------------------------
+    | Order Management Routes
+    |--------------------------------------------------------------------------
+    |
+    | These routes handle all operations related to orders including listing,
+    | viewing, updating status, and exporting orders.
+    |
+    */
+
+    // List all orders with filtering and pagination
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+
+    // Show specific order details
+    Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');
+
+    // Update order status
+    Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+
+    // Update payment status
+    Route::put('/orders/{id}/payment-status', [OrderController::class, 'updatePaymentStatus'])->name('orders.updatePaymentStatus');
+
+    // Add or update notes for an order
+    Route::put('/orders/{id}/notes', [OrderController::class, 'addNotes'])->name('orders.addNotes');
+
+    // Delete an order
+    Route::delete('/orders/{id}', [OrderController::class, 'destroy'])->name('orders.destroy');
+
+    // Export orders to CSV
+    Route::get('/orders/export', [OrderController::class, 'export'])->name('orders.export');
 
 });
 
@@ -180,8 +210,6 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
 
     // Cancel an order
     Route::post('/orders/{order}/cancel', [CustomerOrderController::class, 'cancel'])->name('orders.cancel');
-
-
 
 
 });
