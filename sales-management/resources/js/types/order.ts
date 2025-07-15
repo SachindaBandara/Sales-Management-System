@@ -8,6 +8,10 @@ export interface User {
 }
 
 export interface OrderItem {
+id: number;
+  product: Product;
+  price: number;
+  total: number;
   product_id: number;
   product_name: string;
   product_sku: string;
@@ -24,6 +28,7 @@ export interface OrderItem {
 }
 
 export interface Address {
+  name?: string;
   first_name: string;
   last_name: string;
   email: string;
@@ -54,7 +59,17 @@ export interface Order {
   notes?: string;
   created_at: string;
   items: OrderItem[];
-  items_count: number
+  items_count: number;
+  processed_at?: string;
+  shipped_at?: string;
+  delivered_at?: string;
+}
+
+export interface Product {
+  id: number;
+  name: string;
+  sku: string;
+  image?: string;
 }
 
 export interface PaginatedOrders {
@@ -90,22 +105,6 @@ export interface FormData {
 
 export interface Errors {
     [key: string]: string;
-}
-
-export interface OrderItem {
-  id: number;
-  product_name: string;
-  product_sku: string;
-  product_price: number;
-  quantity: number;
-  total_price: number;
-  product_snapshot: {
-    name: string;
-    sku: string;
-    price: number;
-    image: string;
-    description: string;
-  };
 }
 
 export interface Address {

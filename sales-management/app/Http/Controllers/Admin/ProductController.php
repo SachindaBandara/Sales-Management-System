@@ -19,16 +19,20 @@ class ProductController extends Controller
     {
         $products = Product::query()
             ->with(['brand', 'category'])
+            // Apply filters based on request parameters
             ->when($request->search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('sku', 'like', "%{$search}%");
             })
+            // Filter by status
             ->when($request->status, function ($query, $status) {
                 $query->where('status', $status);
             })
+            // Filter by brand
             ->when($request->brand_id, function ($query, $brandId) {
                 $query->where('brand_id', $brandId);
             })
+            // Filter by category
             ->when($request->category_id, function ($query, $categoryId) {
                 $query->where('category_id', $categoryId);
             })
@@ -41,8 +45,10 @@ class ProductController extends Controller
             // These accessors are already appended in the model
             return $product;
         });
-
+        
+        // Get active brands and categories for filters
         $brands = Brand::active()->orderBy('name')->get();
+        // Get active categories for filters
         $categories = Category::active()->orderBy('name')->get();
 
         return Inertia::render('Admin/Products/Index', [
