@@ -11,7 +11,6 @@
             <TableHead>Product</TableHead>
             <TableHead>Quantity</TableHead>
             <TableHead>Price</TableHead>
-            <TableHead>Total</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -34,8 +33,7 @@
               </div>
             </TableCell>
             <TableCell>{{ item.quantity }}</TableCell>
-            <TableCell>${{ formatCurrency(item.price) }}</TableCell>
-            <TableCell class="font-medium">${{ formatCurrency(item.total) }}</TableCell>
+            <TableCell>${{ formatCurrency(item.product_price) }}</TableCell>
           </TableRow>
         </TableBody>
       </Table>

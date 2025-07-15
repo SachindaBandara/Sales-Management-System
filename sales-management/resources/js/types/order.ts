@@ -8,7 +8,7 @@ export interface User {
 }
 
 export interface OrderItem {
-id: number;
+  id: number;
   product: Product;
   price: number;
   total: number;

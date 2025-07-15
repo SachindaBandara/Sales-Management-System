@@ -176,7 +176,7 @@ class OrderController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Notes updated successfully',
-            'order' => $order->fresh() 
+            'order' => $order->fresh()
         ]);
     }
 
