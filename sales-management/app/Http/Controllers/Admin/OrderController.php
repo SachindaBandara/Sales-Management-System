@@ -104,7 +104,7 @@ class OrderController extends Controller
 
         try {
             // Update the order status
-            $order->updateStatus($request->status);
+            $order->update(['status' => $request->status]);
 
             // Handle stock restoration for cancelled orders
             if ($request->status === 'cancelled' && $oldStatus !== 'cancelled') {
@@ -116,23 +116,32 @@ class OrderController extends Controller
                 }
             }
 
-            // Handle stock reduction for non-cancelled orders
+            // Handle stock reduction for processing orders (if coming from pending)
+            if ($request->status === 'processing' && $oldStatus === 'pending') {
+                foreach ($order->items as $item) {
+                    $product = $item->product;
+                    if ($product && $product->track_quantity) {
+                        // Check if we have enough stock
+                        if ($product->stock_quantity < $item->quantity) {
+                            throw new \Exception("Insufficient stock for product: {$product->name}");
+                        }
+                        $product->decrement('stock_quantity', $item->quantity);
+                    }
+                }
+            }
+
+            // Commit the transaction
             DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Order status updated successfully',
-                'order' => $order->fresh()
-            ]);
+            // Return success response (redirect back with success message)
+            return redirect()->back()->with('success', 'Order status updated successfully');
 
         } catch (\Exception $e) {
             // Rollback the transaction in case of error
             DB::rollBack();
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update order status'
-            ], 500);
+            // Return error response (redirect back with error message)
+            return redirect()->back()->with('error', $e->getMessage() ?: 'Failed to update order status');
         }
     }
 
@@ -146,16 +155,20 @@ class OrderController extends Controller
             'payment_status' => 'required|in:pending,paid,failed,refunded',
         ]);
 
-        // Find the order by ID
-        $order = Order::findOrFail($id);
-        // Update the payment status
-        $order->update(['payment_status' => $request->payment_status]);
+        try {
+            // Find the order by ID
+            $order = Order::findOrFail($id);
+            
+            // Update the payment status
+            $order->update(['payment_status' => $request->payment_status]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Payment status updated successfully',
-            'order' => $order->fresh()
-        ]);
+            // Return success response (redirect back with success message)
+            return redirect()->back()->with('success', 'Payment status updated successfully');
+
+        } catch (\Exception $e) {
+            // Return error response (redirect back with error message)
+            return redirect()->back()->with('error', 'Failed to update payment status');
+        }
     }
 
     /**

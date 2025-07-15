@@ -191,15 +191,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { Head, Link, router } from '@inertiajs/vue3'
+import { ref, reactive, onMounted } from 'vue'
+import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
 import { Download } from 'lucide-vue-next'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import OrdersTable from '@/components/Admin/Orders/OrdersTable.vue'
 import type { Order } from '@/types/order'
-
 
 interface PaginationLink {
     url: string | null
@@ -236,6 +235,8 @@ const props = defineProps<{
     filters: Filters
 }>()
 
+const page = usePage()
+
 const filters = reactive<Filters>({
     status: props.filters.status || '',
     payment_status: props.filters.payment_status || '',
@@ -246,6 +247,17 @@ const filters = reactive<Filters>({
 
 const orders = ref<OrdersPagination>(props.orders)
 const statistics = ref<Statistics>(props.statistics)
+
+// Handle flash messages
+onMounted(() => {
+    const flashMessages = page.props.flash as any
+    if (flashMessages?.success) {
+        toast.success(flashMessages.success)
+    }
+    if (flashMessages?.error) {
+        toast.error(flashMessages.error)
+    }
+})
 
 const applyFilters = () => {
     router.get(route('admin.orders.index'), filters, {
@@ -268,57 +280,36 @@ const viewOrder = (id: number) => {
     router.get(route('admin.orders.show', id))
 }
 
-const updateOrderStatus = async (id: number, status: string) => {
-    try {
-        await router.put(route('admin.orders.updateStatus', id), { status }, {
-            preserveState: true,
-            onSuccess: () => {
-                toast.success('Order status updated successfully')
-                applyFilters()
-            },
-            onError: () => {
-                toast.error('Failed to update order status')
-            }
-        })
-    } catch (error) {
-        console.error('Error updating order status:', error)
-    }
+const updateOrderStatus = (id: number, status: string) => {
+    router.put(route('admin.orders.updateStatus', id), { status }, {
+        preserveState: true,
+        onSuccess: () => {
+            // Refresh the orders data
+            applyFilters()
+        }
+    })
 }
 
-const updatePaymentStatus = async (id: number, payment_status: string) => {
-    try {
-        await router.put(route('admin.orders.updatePaymentStatus', id), { payment_status }, {
-            preserveState: true,
-            onSuccess: () => {
-                toast.success('Payment status updated successfully')
-                applyFilters()
-            },
-            onError: () => {
-                toast.error('Failed to update payment status')
-            }
-        })
-    } catch (error) {
-        console.error('Error updating payment status:', error)
-    }
+const updatePaymentStatus = (id: number, payment_status: string) => {
+    router.put(route('admin.orders.updatePaymentStatus', id), { payment_status }, {
+        preserveState: true,
+        onSuccess: () => {
+            // Refresh the orders data
+            applyFilters()
+        }
+    })
 }
 
-const deleteOrder = async (id: number) => {
+const deleteOrder = (id: number) => {
     if (!confirm('Are you sure you want to delete this order? This action cannot be undone.')) return
 
-    try {
-        await router.delete(route('admin.orders.destroy', id), {
-            preserveState: true,
-            onSuccess: () => {
-                toast.success('Order deleted successfully')
-                applyFilters()
-            },
-            onError: () => {
-                toast.error('Failed to delete order')
-            }
-        })
-    } catch (error) {
-        console.error('Error deleting order:', error)
-    }
+    router.delete(route('admin.orders.destroy', id), {
+        preserveState: true,
+        onSuccess: () => {
+            // Refresh the orders data
+            applyFilters()
+        }
+    })
 }
 
 const exportOrders = () => {
