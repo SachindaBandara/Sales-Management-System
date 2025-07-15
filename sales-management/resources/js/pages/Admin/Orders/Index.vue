@@ -19,76 +19,7 @@
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <!-- Statistics Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                                        <span class="text-white font-bold text-sm">T</span>
-                                    </div>
-                                </div>
-                                <div class="ml-5">
-                                    <dl>
-                                        <dt class="text-sm font-medium text-gray-500 truncate">Total Orders</dt>
-                                        <dd class="text-lg font-semibold text-gray-900">{{ statistics.total_orders }}</dd>
-                                    </dl>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                                        <span class="text-white font-bold text-sm">P</span>
-                                    </div>
-                                </div>
-                                <div class="ml-5">
-                                    <dl>
-                                        <dt class="text-sm font-medium text-gray-500 truncate">Pending Orders</dt>
-                                        <dd class="text-lg font-semibold text-gray-900">{{ statistics.pending_orders }}</dd>
-                                    </dl>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    <div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
-                                        <span class="text-white font-bold text-sm">C</span>
-                                    </div>
-                                </div>
-                                <div class="ml-5">
-                                    <dl>
-                                        <dt class="text-sm font-medium text-gray-500 truncate">Completed Orders</dt>
-                                        <dd class="text-lg font-semibold text-gray-900">{{ statistics.completed_orders }}</dd>
-                                    </dl>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                                        <span class="text-white font-bold text-sm">R</span>
-                                    </div>
-                                </div>
-                                <div class="ml-5">
-                                    <dl>
-                                        <dt class="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
-                                        <dd class="text-lg font-semibold text-gray-900">${{ formatCurrency(statistics.total_revenue) }}</dd>
-                                    </dl>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <OrderStatistics :statistics="statistics" />
 
                 <!-- Filters -->
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
@@ -162,25 +93,10 @@
 
                 <!-- Pagination -->
                 <div class="px-6 py-4 border-t bg-gray-50">
-                    <div class="flex items-center justify-between">
-                        <div class="text-sm text-gray-700">
-                            Showing {{ orders.from }} to {{ orders.to }} of {{ orders.total }} results
-                        </div>
-                        <div class="flex space-x-1">
-                            <Link v-for="link in orders.links" :key="link.label"
-                                  :href="link.url ?? ''"
-                                  :class="[
-                                      'px-3 py-2 text-sm border rounded transition-colors duration-150',
-                                      link.active ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50',
-                                      !link.url ? 'pointer-events-none opacity-50' : ''
-                                  ]"
-                            >
-                                <span v-if="link.label === '« Previous'">« Previous</span>
-                                <span v-else-if="link.label === 'Next »'">Next »</span>
-                                <span v-else>{{ link.label.replace(/(<([^>]+)>)/gi, '') }}</span>
-                            </Link>
-                        </div>
-                    </div>
+                    <OrderPagination
+                        :orders="orders"
+                        @change-page="changePage"
+                    />
                 </div>
             </div>
         </div>
@@ -192,13 +108,15 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { Head, Link, router, usePage } from '@inertiajs/vue3'
+import { Head, router, usePage } from '@inertiajs/vue3'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
 import { Download } from 'lucide-vue-next'
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import OrdersTable from '@/components/Admin/Orders/OrdersTable.vue'
-import type { Order } from '@/types/order'
+import OrderPagination from '@/components/Admin/Orders/OrderPagination.vue'
+import OrderStatistics from '@/components/Admin/Orders/OrderStatistics.vue'
+import type { Order, Statistics } from '@/types/order'
 
 interface PaginationLink {
     url: string | null
@@ -211,14 +129,10 @@ interface OrdersPagination {
     from: number
     to: number
     total: number
+    current_page: number
+    prev_page_url: string | null
+    next_page_url: string | null
     links: PaginationLink[]
-}
-
-interface Statistics {
-    total_orders: number
-    pending_orders: number
-    completed_orders: number
-    total_revenue: number
 }
 
 interface Filters {
@@ -312,15 +226,19 @@ const deleteOrder = (id: number) => {
     })
 }
 
+const changePage = (page: number) => {
+    const newFilters = { ...filters, page: page.toString() }
+    router.get(route('admin.orders.index'), newFilters, {
+        preserveState: true,
+        replace: true,
+        onSuccess: (page) => {
+            orders.value = page.props.orders as OrdersPagination
+        }
+    })
+}
+
 const exportOrders = () => {
     const params = new URLSearchParams(filters as any).toString()
     window.location.href = route('admin.orders.export') + (params ? `?${params}` : '')
-}
-
-const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    }).format(amount)
 }
 </script>
