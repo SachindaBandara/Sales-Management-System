@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\Brand;
+use App\Models\User;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -13,7 +13,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class BrandsExport implements FromQuery, WithHeadings, WithMapping, WithColumnWidths, WithStyles
+class UsersExport implements FromQuery, WithHeadings, WithMapping, WithColumnWidths, WithStyles
 {
     protected $filters;
 
@@ -23,20 +23,24 @@ class BrandsExport implements FromQuery, WithHeadings, WithMapping, WithColumnWi
     }
 
     /**
-     * Query to fetch brands data
+     * Query to fetch users data
      */
     public function query()
     {
-        $query = Brand::query()->with('products');
+        $query = User::query();
 
         // Apply the same filters as in the index method
         if (!empty($this->filters['search'])) {
-            $query->where('name', 'like', "%{$this->filters['search']}%");
+            $query->where(function($q) {
+                $search = $this->filters['search'];
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
         }
 
-        // if (isset($this->filters['status']) && $this->filters['status'] !== '') {
-        //     $query->where('is_active', $this->filters['status']);
-        // }
+        if (isset($this->filters['role']) && $this->filters['role'] !== '') {
+            $query->where('role', $this->filters['role']);
+        }
 
         return $query->orderBy('name');
     }
@@ -48,12 +52,12 @@ class BrandsExport implements FromQuery, WithHeadings, WithMapping, WithColumnWi
     {
         return [
             'ID',
-            'Brand Name',
-            'Slug',
-            'Description',
-            'Logo URL',
+            'Name',
+            'Email',
+            'Role',
             'Status',
-            'Total Products',
+            'Email Verified',
+            'Last Login',
             'Created Date',
             'Updated Date'
         ];
@@ -62,18 +66,18 @@ class BrandsExport implements FromQuery, WithHeadings, WithMapping, WithColumnWi
     /**
      * Map data for each row
      */
-    public function map($brand): array
+    public function map($user): array
     {
         return [
-            $brand->id,
-            $brand->name,
-            $brand->slug,
-            $brand->description ?? 'N/A',
-            $brand->logo ?? 'No Logo',
-            $brand->is_active ? 'Active' : 'Inactive',
-            $brand->products->count(),
-            $brand->created_at->format('Y-m-d H:i:s'),
-            $brand->updated_at->format('Y-m-d H:i:s')
+            $user->id,
+            $user->name,
+            $user->email,
+            ucfirst($user->role),
+            $user->is_active ? 'Active' : 'Inactive',
+            $user->email_verified_at ? 'Verified' : 'Not Verified',
+            $user->last_login_at ? $user->last_login_at->format('Y-m-d H:i:s') : 'Never',
+            $user->created_at->format('Y-m-d H:i:s'),
+            $user->updated_at->format('Y-m-d H:i:s')
         ];
     }
 
@@ -84,12 +88,12 @@ class BrandsExport implements FromQuery, WithHeadings, WithMapping, WithColumnWi
     {
         return [
             'A' => 8,   // ID
-            'B' => 25,  // Brand Name
-            'C' => 20,  // Slug
-            'D' => 35,  // Description
-            'E' => 30,  // Logo URL
-            'F' => 12,  // Status
-            'G' => 15,  // Total Products
+            'B' => 25,  // Name
+            'C' => 30,  // Email
+            'D' => 12,  // Role
+            'E' => 12,  // Status
+            'F' => 15,  // Email Verified
+            'G' => 20,  // Last Login
             'H' => 20,  // Created Date
             'I' => 20,  // Updated Date
         ];
@@ -111,7 +115,7 @@ class BrandsExport implements FromQuery, WithHeadings, WithMapping, WithColumnWi
             ],
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['rgb' => '4A90E2']
+                'startColor' => ['rgb' => '2E8B57'] // Sea Green for users
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -142,9 +146,6 @@ class BrandsExport implements FromQuery, WithHeadings, WithMapping, WithColumnWi
 
         // Set row height for header
         $sheet->getRowDimension(1)->setRowHeight(25);
-        
-        // Auto-wrap text for description column
-        $sheet->getStyle("D:D")->getAlignment()->setWrapText(true);
         
         return [];
     }

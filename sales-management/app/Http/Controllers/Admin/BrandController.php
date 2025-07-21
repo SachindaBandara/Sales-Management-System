@@ -161,7 +161,6 @@ class BrandController extends Controller
             // Get filters from request
             $filters = [
                 'search' => $request->get('search'),
-                'status' => $request->get('status')
             ];
 
             // Generate filename with timestamp

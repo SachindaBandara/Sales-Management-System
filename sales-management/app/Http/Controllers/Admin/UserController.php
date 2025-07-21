@@ -5,10 +5,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Exports\UsersExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 
 class UserController extends Controller
 {
@@ -146,5 +151,31 @@ class UserController extends Controller
 
         $status = $user->is_active ? 'activated' : 'deactivated';
         return back()->with('success', "User {$status} successfully.");
+    }
+
+    /**
+     * Export brands to Excel
+     */
+    public function export(Request $request)
+    {
+        try {
+            // Get filters from request
+            $filters = [
+                'search' => $request->get('search'),
+                'role' => $request->get('role'),
+            ];
+
+            // Generate filename with timestamp
+            $timestamp = now()->format('Y-m-d_H-i-s');
+            $filename = "users_export_{$timestamp}.xlsx";
+
+            // Create and download Excel file
+            return Excel::download(new UsersExport($filters), $filename);
+
+        } catch (\Exception $e) {
+            Log::error('Users export failed: ' . $e->getMessage());
+            
+            return back()->with('error', 'Failed to export users. Please try again.');
+        }
     }
 }

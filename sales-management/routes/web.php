@@ -46,6 +46,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // User Management
     Route::resource('users', UserController::class);
     Route::patch('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+    Route::get('users-export', [UserController::class, 'export'])->name('users.export');
 
     // Brand Management
     Route::resource('brands', BrandController::class);
