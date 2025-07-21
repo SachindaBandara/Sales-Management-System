@@ -154,7 +154,7 @@ class UserController extends Controller
     }
 
     /**
-     * Export brands to Excel
+     * Export user to Excel
      */
     public function export(Request $request)
     {

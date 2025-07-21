@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\CategoriesExport;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CategoryController extends Controller
 {
@@ -165,5 +168,32 @@ class CategoryController extends Controller
     {
         $category->update(['is_active' => !$category->is_active]);
         return redirect()->route('admin.categories.index')->with('success', 'Category status updated successfully.');
+    }
+
+       /**
+     * Export brands to Excel
+     */
+    public function export(Request $request)
+    {
+        try {
+            // Get filters from request
+            $filters = [
+                'search' => $request->get('search'),
+                'parent_only' => $request->get('parent_only'),
+                'parent_id' => $request->get('parent_id'),
+            ];
+
+            // Generate filename with timestamp
+            $timestamp = now()->format('Y-m-d_H-i-s');
+            $filename = "categories_export_{$timestamp}.xlsx";
+
+            // Create and download Excel file
+            return Excel::download(new CategoriesExport($filters), $filename);
+
+        } catch (\Exception $e) {
+            Log::error('Category export failed: ' . $e->getMessage());
+            
+            return back()->with('error', 'Failed to export categories. Please try again.');
+        }
     }
 }

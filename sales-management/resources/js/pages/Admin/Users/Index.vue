@@ -83,7 +83,7 @@ const deleteUser = (user: User) => {
     }
 };
 
-const exportBrands = () => {
+const exportUsers = () => {
     if (isExporting.value) return;
     
     isExporting.value = true;
@@ -130,7 +130,7 @@ const formatDate = (date: string): string => {
                  <div class="flex space-x-3">
                     <!-- Export Button -->
                     <button 
-                        @click="exportBrands"
+                        @click="exportUsers"
                         :disabled="isExporting"
                         class="bg-green-500 hover:bg-green-700 disabled:bg-green-300 text-white font-bold py-2 px-4 rounded transition-colors duration-200 flex items-center space-x-2"
                     >
