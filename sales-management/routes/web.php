@@ -1,14 +1,17 @@
 <?php
-
+// Admin Controllers
+use App\Http\Controllers\Admin\OrderExportController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ImageController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
+
+// Customer Controllers
 use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
-use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use Illuminate\Foundation\Application;
@@ -47,6 +50,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Brand Management
     Route::resource('brands', BrandController::class);
     Route::patch('brands/{brand}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggle-status');
+    Route::get('brands-export', [BrandController::class, 'export'])->name('brands.export');
+
 
     // Category Management
     Route::resource('categories', CategoryController::class);
@@ -141,10 +146,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Delete an order
     Route::delete('/orders/{id}', [OrderController::class, 'destroy'])->name('orders.destroy');
 
-    // Export orders to CSV
-    Route::get('/orders/export', [OrderController::class, 'export'])->name('orders.export');
-
 });
+
 
 
 

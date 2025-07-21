@@ -9,6 +9,8 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use App\Exports\BrandsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BrandController extends Controller
 {
@@ -148,5 +150,31 @@ class BrandController extends Controller
     {
         $brand->update(['is_active' => !$brand->is_active]);
         return redirect()->route('admin.brands.index')->with('success', 'Brand status updated successfully.');
+    }
+
+    /**
+     * Export brands to Excel
+     */
+    public function export(Request $request)
+    {
+        try {
+            // Get filters from request
+            $filters = [
+                'search' => $request->get('search'),
+                'status' => $request->get('status')
+            ];
+
+            // Generate filename with timestamp
+            $timestamp = now()->format('Y-m-d_H-i-s');
+            $filename = "brands_export_{$timestamp}.xlsx";
+
+            // Create and download Excel file
+            return Excel::download(new BrandsExport($filters), $filename);
+
+        } catch (\Exception $e) {
+            Log::error('Brand export failed: ' . $e->getMessage());
+            
+            return back()->with('error', 'Failed to export brands. Please try again.');
+        }
     }
 }

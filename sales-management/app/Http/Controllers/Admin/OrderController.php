@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Inertia\Inertia;
 
 class OrderController extends Controller
@@ -14,7 +15,7 @@ class OrderController extends Controller
     /**
      * Display orders management page.
      */
-   public function index(Request $request)
+    public function index(Request $request)
     {
         // Validate request parameters
         $query = Order::with(['user', 'items'])
@@ -39,11 +40,11 @@ class OrderController extends Controller
             $query->where(function ($q) use ($search) {
                 // Search in order number and user name/email
                 $q->where('order_number', 'like', "%{$search}%")
-                // orWhereHas to search in related user model
-                  ->orWhereHas('user', function ($userQuery) use ($search) {
-                      $userQuery->where('name', 'like', "%{$search}%")
-                               ->orWhere('email', 'like', "%{$search}%");
-                  });
+                    // orWhereHas to search in related user model
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -135,7 +136,6 @@ class OrderController extends Controller
 
             // Return success response (redirect back with success message)
             return redirect()->back()->with('success', 'Order status updated successfully');
-
         } catch (\Exception $e) {
             // Rollback the transaction in case of error
             DB::rollBack();
@@ -158,13 +158,12 @@ class OrderController extends Controller
         try {
             // Find the order by ID
             $order = Order::findOrFail($id);
-            
+
             // Update the payment status
             $order->update(['payment_status' => $request->payment_status]);
 
             // Return success response (redirect back with success message)
             return redirect()->back()->with('success', 'Payment status updated successfully');
-
         } catch (\Exception $e) {
             // Return error response (redirect back with error message)
             return redirect()->back()->with('error', 'Failed to update payment status');
@@ -224,7 +223,6 @@ class OrderController extends Controller
                 'success' => true,
                 'message' => 'Order deleted successfully'
             ]);
-
         } catch (\Exception $e) {
             // Rollback the transaction in case of error
             DB::rollBack();
@@ -247,98 +245,22 @@ class OrderController extends Controller
         $thisMonth = now()->startOfMonth();
 
         return [
-            'total_orders' => Order::count(),// Count all orders
-            'pending_orders' => Order::where('status', 'pending')->count(),// Count pending orders
-            'processing_orders' => Order::where('status', 'processing')->count(),// Count processing orders
-            'shipped_orders' => Order::where('status', 'shipped')->count(),// Count shipped orders
-            'delivered_orders' => Order::where('status', 'delivered')->count(),// Count delivered orders
-            'cancelled_orders' => Order::where('status', 'cancelled')->count(),// Count cancelled orders
-            'todays_orders' => Order::whereDate('created_at', $today)->count(),// Count today's orders
-            'this_month_orders' => Order::whereDate('created_at', '>=', $thisMonth)->count(),// Count this month's orders
-            'total_revenue' => Order::whereNotIn('status', ['cancelled'])->sum('total_amount'),// Total revenue excluding cancelled orders
+            'total_orders' => Order::count(), // Count all orders
+            'pending_orders' => Order::where('status', 'pending')->count(), // Count pending orders
+            'processing_orders' => Order::where('status', 'processing')->count(), // Count processing orders
+            'shipped_orders' => Order::where('status', 'shipped')->count(), // Count shipped orders
+            'delivered_orders' => Order::where('status', 'delivered')->count(), // Count delivered orders
+            'cancelled_orders' => Order::where('status', 'cancelled')->count(), // Count cancelled orders
+            'todays_orders' => Order::whereDate('created_at', $today)->count(), // Count today's orders
+            'this_month_orders' => Order::whereDate('created_at', '>=', $thisMonth)->count(), // Count this month's orders
+            'total_revenue' => Order::whereNotIn('status', ['cancelled'])->sum('total_amount'), // Total revenue excluding cancelled orders
             'todays_revenue' => Order::whereDate('created_at', $today)
                 ->whereNotIn('status', ['cancelled'])
-                ->sum('total_amount'),// Today's revenue excluding cancelled orders
+                ->sum('total_amount'), // Today's revenue excluding cancelled orders
             'this_month_revenue' => Order::whereDate('created_at', '>=', $thisMonth)
                 ->whereNotIn('status', ['cancelled'])
-                ->sum('total_amount'),// This month's revenue excluding cancelled orders
+                ->sum('total_amount'), // This month's revenue excluding cancelled orders
         ];
     }
 
-    /**
-     * Export orders to CSV.
-     */
-    public function export(Request $request)
-    {
-        $query = Order::with(['user', 'items']);
-
-        // Apply same filters as index
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-        if ($request->filled('payment_status')) {
-            $query->where('payment_status', $request->payment_status);
-        }
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('order_number', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($userQuery) use ($search) {
-                      $userQuery->where('name', 'like', "%{$search}%")
-                               ->orWhere('email', 'like', "%{$search}%");
-                  });
-            });
-        }
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        $orders = $query->recent()->get();
-
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="orders-' . now()->format('Y-m-d') . '.csv"',
-        ];
-
-        $callback = function () use ($orders) {
-            $file = fopen('php://output', 'w');
-
-            // CSV headers
-            fputcsv($file, [
-                'Order Number',
-                'Customer Name',
-                'Customer Email',
-                'Status',
-                'Payment Status',
-                'Subtotal',
-                'Tax',
-                'Total',
-                'Items Count',
-                'Created At',
-            ]);
-
-            // CSV data
-            foreach ($orders as $order) {
-                fputcsv($file, [
-                    $order->order_number,
-                    $order->user->name,
-                    $order->user->email,
-                    $order->status,
-                    $order->payment_status,
-                    $order->subtotal,
-                    $order->tax_amount,
-                    $order->total_amount,
-                    $order->items->count(),
-                    $order->created_at->format('Y-m-d H:i:s'),
-                ]);
-            }
-
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
-    }
 }

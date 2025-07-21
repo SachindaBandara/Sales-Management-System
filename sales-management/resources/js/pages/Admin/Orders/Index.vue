@@ -8,10 +8,7 @@
                     Orders Management
                 </h2>
                 <div class="flex gap-2">
-                    <button @click="exportOrders" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center gap-2">
-                        <Download class="w-4 h-4" />
-                        Export CSV
-                    </button>
+                
                 </div>
             </div>
         </template>
@@ -111,7 +108,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { Head, router, usePage } from '@inertiajs/vue3'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
-import { Download } from 'lucide-vue-next'
+
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue'
 import OrdersTable from '@/components/Admin/Orders/OrdersTable.vue'
 import OrderPagination from '@/components/Admin/Orders/OrderPagination.vue'
@@ -198,8 +195,8 @@ const updateOrderStatus = (id: number, status: string) => {
     router.put(route('admin.orders.updateStatus', id), { status }, {
         preserveState: true,
         onSuccess: () => {
-            // Refresh the orders data
             applyFilters()
+            toast.success('Order status updated successfully')
         }
     })
 }
@@ -208,8 +205,8 @@ const updatePaymentStatus = (id: number, payment_status: string) => {
     router.put(route('admin.orders.updatePaymentStatus', id), { payment_status }, {
         preserveState: true,
         onSuccess: () => {
-            // Refresh the orders data
             applyFilters()
+            toast.success('Payment status updated successfully')
         }
     })
 }
@@ -220,8 +217,8 @@ const deleteOrder = (id: number) => {
     router.delete(route('admin.orders.destroy', id), {
         preserveState: true,
         onSuccess: () => {
-            // Refresh the orders data
             applyFilters()
+            toast.success('Order deleted successfully')
         }
     })
 }
@@ -237,8 +234,112 @@ const changePage = (page: number) => {
     })
 }
 
-const exportOrders = () => {
-    const params = new URLSearchParams(filters as any).toString()
-    window.location.href = route('admin.orders.export') + (params ? `?${params}` : '')
-}
 </script>
+
+<style scoped>
+/* Custom styles for the orders management page */
+.orders-management {
+    min-height: 100vh;
+    background-color: #5b6977;
+}
+
+/* Loading state styles */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(255, 255, 255, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+}
+
+/* Export button animation */
+@keyframes pulse-green {
+    0%, 100% {
+        background-color: #10b981;
+    }
+    50% {
+        background-color: #059669;
+    }
+}
+
+.export-button-loading {
+    animation: pulse-green 1.5s ease-in-out infinite;
+}
+
+/* Filter form responsive adjustments */
+@media (max-width: 768px) {
+    .filters-form {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .filter-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+/* Table responsive wrapper */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+/* Status badge styles */
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-pending {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.status-processing {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.status-shipped {
+    background-color: #ede9fe;
+    color: #7c3aed;
+}
+
+.status-delivered {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.status-cancelled {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+/* Payment status badges */
+.payment-pending {
+    background-color: #fed7aa;
+    color: #ea580c;
+}
+
+.payment-paid {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.payment-failed {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+.payment-refunded {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+</style>
