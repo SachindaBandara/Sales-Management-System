@@ -63,6 +63,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('categories', CategoryController::class);
     Route::patch('categories/{category}/toggle-status', [CategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
     Route::get('categories-export', [CategoryController::class, 'export'])->name('categories.export');
+    Route::post('categories/import', [CategoryController::class, 'import'])->name('categories.import');
+    Route::get('categories/template/download', [CategoryController::class, 'downloadTemplate'])->name('categories.template.download');
+    Route::get('categories/import-errors', [CategoryController::class, 'getImportErrors'])->name('categories.import-errors');
 
     /*
     |--------------------------------------------------------------------------
