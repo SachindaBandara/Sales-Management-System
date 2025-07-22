@@ -52,7 +52,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('brands', BrandController::class);
     Route::patch('brands/{brand}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggle-status');
     Route::get('brands-export', [BrandController::class, 'export'])->name('brands.export');
-
+    Route::post('brands/import', [BrandController::class, 'import'])->name('brands.import');
+    Route::get('brands/template/download', [BrandController::class, 'downloadTemplate'])->name('brands.template.download');
+    Route::get('brands/import-errors', [BrandController::class, 'getImportErrors'])->name('brands.import-errors');
 
     // Category Management
     Route::resource('categories', CategoryController::class);
