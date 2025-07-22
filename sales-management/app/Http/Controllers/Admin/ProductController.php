@@ -9,6 +9,10 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
+use App\Exports\ProductsExport;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
@@ -396,4 +400,40 @@ class ProductController extends Controller
                 ->withErrors(['error' => 'Bulk action failed. Please try again.']);
         }
     }
+
+    /**
+ * Export products to Excel
+ */
+public function export(Request $request)
+{
+    try {
+        // Get filters from request
+        $filters = [
+            'search' => $request->get('search'),
+            'status' => $request->get('status'),
+            'brand_id' => $request->get('brand_id'),
+            'category_id' => $request->get('category_id'),
+            'stock_status' => $request->get('stock_status'),
+            'price_min' => $request->get('price_min'),
+            'price_max' => $request->get('price_max'),
+        ];
+
+        // Remove empty filters
+        $filters = array_filter($filters, function($value) {
+            return $value !== null && $value !== '';
+        });
+
+        // Generate filename with timestamp
+        $timestamp = now()->format('Y-m-d_H-i-s');
+        $filename = "products_export_{$timestamp}.xlsx";
+
+        // Create and download Excel file
+        return Excel::download(new ProductsExport($filters), $filename);
+
+    } catch (\Exception $e) {
+        Log::error('Product export failed: ' . $e->getMessage());
+        
+        return back()->with('error', 'Failed to export products. Please try again.');
+    }
+}
 }

@@ -90,6 +90,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Bulk actions for products
     Route::post('products/bulk-action', [ProductController::class, 'bulkAction'])->name('products.bulk-action');
 
+    // Export products to Excel
+    Route::get('products-export', [ProductController::class, 'export'])->name('products.export');
+
     /*
     |--------------------------------------------------------------------------
     | Product Image Management Routes

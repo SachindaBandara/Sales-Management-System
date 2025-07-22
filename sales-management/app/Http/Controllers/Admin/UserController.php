@@ -140,6 +140,7 @@ class UserController extends Controller
         return back()->with('success', 'User deleted successfully.');
     }
 
+    
       public function toggleStatus(User $user)
     {
         // Prevent admin from deactivating themselves
@@ -154,7 +155,7 @@ class UserController extends Controller
     }
 
     /**
-     * Export user to Excel
+     * Export users to Excel
      */
     public function export(Request $request)
     {
@@ -174,7 +175,7 @@ class UserController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Users export failed: ' . $e->getMessage());
-            
+
             return back()->with('error', 'Failed to export users. Please try again.');
         }
     }
