@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Log;
+use App\Exports\OrdersExport;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 class OrderController extends Controller
 {
@@ -263,4 +268,37 @@ class OrderController extends Controller
         ];
     }
 
+    /**
+     * Export products to Excel
+     */
+    public function export(Request $request)
+    {
+        try {
+            // Get filters from request
+            $filters = [
+                'search' => $request->get('search'),
+                'status' => $request->get('status'),
+                'payment_status' => $request->get('payment_status'),
+                'date_from' => $request->get('date_from'),
+                'date_to' => $request->get('date_to'),
+                'user_id' => $request->get('user_id'),
+            ];
+
+            // Remove empty filters
+            $filters = array_filter($filters, function ($value) {
+                return $value !== null && $value !== '';
+            });
+
+            // Generate filename with timestamp
+            $timestamp = now()->format('Y-m-d_H-i-s');
+            $filename = "orders_export_{$timestamp}.xlsx";
+
+            // Create and download Excel file
+            return Excel::download(new OrdersExport($filters), $filename);
+        } catch (\Exception $e) {
+            Log::error('Order export failed: ' . $e->getMessage());
+
+            return back()->with('error', 'Failed to export orders. Please try again.');
+        }
+    }
 }

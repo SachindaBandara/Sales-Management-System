@@ -151,6 +151,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Delete an order
     Route::delete('/orders/{id}', [OrderController::class, 'destroy'])->name('orders.destroy');
 
+    // Export orders to Excel
+    Route::get('orders-export', [OrderController::class, 'export'])->name('orders.export');
+
 });
 
 
