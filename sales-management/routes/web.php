@@ -47,6 +47,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('users', UserController::class);
     Route::patch('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
     Route::get('users-export', [UserController::class, 'export'])->name('users.export');
+    Route::post('users/import', [UserController::class, 'import'])->name('users.import');
+    Route::get('users/template/download', [UserController::class, 'downloadTemplate'])->name('users.template.download');
+    Route::get('users/import-errors', [UserController::class, 'getImportErrors'])->name('users.import-errors');
 
     // Brand Management
     Route::resource('brands', BrandController::class);

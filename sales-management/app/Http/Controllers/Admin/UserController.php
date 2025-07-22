@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Exports\UsersExport;
+use App\Imports\UsersImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -177,4 +178,131 @@ class UserController extends Controller
             return back()->with('error', 'Failed to export users. Please try again.');
         }
     }
+
+    /**
+ * Import users from Excel file
+ */
+public function import(Request $request)
+{
+    $request->validate([
+        'import_file' => [
+            'required',
+            'file',
+            'mimes:xlsx,xls,csv',
+            'max:10240' // 10MB max file size
+        ]
+    ], [
+        'import_file.required' => 'Please select a file to import.',
+        'import_file.mimes' => 'The file must be an Excel file (.xlsx, .xls) or CSV file (.csv).',
+        'import_file.max' => 'The file size must not exceed 10MB.'
+    ]);
+
+    try {
+        $import = new UsersImport();
+
+        Excel::import($import, $request->file('import_file'));
+
+        $results = $import->getResults();
+
+        // Prepare flash messages based on results
+        $messages = [];
+
+        if ($results['success_count'] > 0) {
+            $messages[] = "Successfully imported {$results['success_count']} new users.";
+        }
+
+        if ($results['update_count'] > 0) {
+            $messages[] = "Updated {$results['update_count']} existing users.";
+        }
+
+        if ($results['error_count'] > 0) {
+            $messages[] = "Failed to process {$results['error_count']} rows due to errors.";
+        }
+
+        // If there are errors, store them in session for detailed view
+        if (!empty($results['errors'])) {
+            session(['user_import_errors' => $results['errors']]);
+
+            return redirect()->route('admin.users.index')
+                ->with('warning', implode(' ', $messages))
+                ->with('import_results', $results);
+        }
+
+        return redirect()->route('admin.users.index')
+            ->with('success', implode(' ', $messages))
+            ->with('import_results', $results);
+
+    } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+        $failures = $e->failures();
+        $errorMessages = [];
+
+        foreach ($failures as $failure) {
+            $errorMessages[] = "Row {$failure->row()}: " . implode(', ', $failure->errors());
+        }
+
+        return redirect()->route('admin.users.index')
+            ->with('error', 'Import failed due to validation errors: ' . implode(' | ', array_slice($errorMessages, 0, 5)) . (count($errorMessages) > 5 ? '... and ' . (count($errorMessages) - 5) . ' more errors.' : ''));
+
+    } catch (\Exception $e) {
+        Log::error('User import failed', [
+            'error' => $e->getMessage(),
+            'file' => $request->file('import_file')?->getClientOriginalName()
+        ]);
+
+        return redirect()->route('admin.users.index')
+            ->with('error', 'Import failed: ' . $e->getMessage());
+    }
+}
+
+/**
+ * Download Excel template for user import
+ */
+public function downloadTemplate()
+{
+    try {
+        $headers = UsersImport::getExpectedHeaders();
+        $sampleData = UsersImport::getSampleData();
+
+        // Create a simple CSV template
+        $filename = 'users_import_template_' . date('Y-m-d') . '.csv';
+        $temp_file = tempnam(sys_get_temp_dir(), 'users_template');
+
+        $handle = fopen($temp_file, 'w');
+
+        // Write headers
+        fputcsv($handle, array_keys($headers));
+
+        // Write header descriptions as a comment row
+        fputcsv($handle, array_values($headers));
+
+        // Write sample data
+        foreach ($sampleData as $row) {
+            fputcsv($handle, $row);
+        }
+
+        fclose($handle);
+
+        return response()->download($temp_file, $filename, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+        ])->deleteFileAfterSend(true);
+
+    } catch (\Exception $e) {
+        Log::error('Failed to generate user template', ['error' => $e->getMessage()]);
+
+        return redirect()->route('admin.users.index')
+            ->with('error', 'Failed to generate template file.');
+    }
+}
+
+/**
+ * Get user import errors for display
+ */
+public function getImportErrors()
+{
+    $errors = session('user_import_errors', []);
+    session()->forget('user_import_errors');
+
+    return response()->json($errors);
+}
 }
