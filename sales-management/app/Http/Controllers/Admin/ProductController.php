@@ -10,8 +10,11 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
 use App\Exports\ProductsExport;
+use App\Imports\ProductsImport;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
@@ -49,7 +52,7 @@ class ProductController extends Controller
             // These accessors are already appended in the model
             return $product;
         });
-        
+
         // Get active brands and categories for filters
         $brands = Brand::active()->orderBy('name')->get();
         // Get active categories for filters
@@ -117,7 +120,6 @@ class ProductController extends Controller
 
             return redirect()->route('admin.products.index')
                 ->with('success', 'Product created successfully. You can now upload images using the image management section.');
-
         } catch (\Exception $e) {
             Log::error('Product creation failed', [
                 'error' => $e->getMessage(),
@@ -199,7 +201,6 @@ class ProductController extends Controller
 
             return redirect()->route('admin.products.index')
                 ->with('success', 'Product updated successfully.');
-
         } catch (\Exception $e) {
             Log::error('Product update failed', [
                 'product_id' => $product->id,
@@ -232,7 +233,6 @@ class ProductController extends Controller
 
             return redirect()->route('admin.products.index')
                 ->with('success', 'Product and all associated images deleted successfully.');
-
         } catch (\Exception $e) {
             Log::error('Product deletion failed', [
                 'product_id' => $product->id,
@@ -261,7 +261,6 @@ class ProductController extends Controller
 
             return redirect()->back()
                 ->with('success', "Product status changed to {$newStatus}.");
-
         } catch (\Exception $e) {
             Log::error('Product status toggle failed', [
                 'product_id' => $product->id,
@@ -294,7 +293,6 @@ class ProductController extends Controller
 
             return redirect()->route('admin.products.edit', $newProduct)
                 ->with('success', 'Product duplicated successfully. Images were not copied - you can upload new images separately.');
-
         } catch (\Exception $e) {
             Log::error('Product duplication failed', [
                 'product_id' => $product->id,
@@ -321,7 +319,7 @@ class ProductController extends Controller
                     ->where('stock_quantity', '<=', 0)->count(),
                 'products_with_images' => Product::whereNotNull('images')
                     ->where('images', '!=', '[]')->count(),
-                'products_without_images' => Product::where(function($query) {
+                'products_without_images' => Product::where(function ($query) {
                     $query->whereNull('images')
                         ->orWhere('images', '[]');
                 })->count(),
@@ -331,7 +329,6 @@ class ProductController extends Controller
                 'success' => true,
                 'statistics' => $stats
             ]);
-
         } catch (\Exception $e) {
             Log::error('Failed to get product statistics', [
                 'error' => $e->getMessage()
@@ -388,7 +385,6 @@ class ProductController extends Controller
             ]);
 
             return redirect()->back()->with('success', $message);
-
         } catch (\Exception $e) {
             Log::error('Bulk action failed', [
                 'action' => $validated['action'],
@@ -402,38 +398,165 @@ class ProductController extends Controller
     }
 
     /**
- * Export products to Excel
- */
-public function export(Request $request)
-{
-    try {
-        // Get filters from request
-        $filters = [
-            'search' => $request->get('search'),
-            'status' => $request->get('status'),
-            'brand_id' => $request->get('brand_id'),
-            'category_id' => $request->get('category_id'),
-            'stock_status' => $request->get('stock_status'),
-            'price_min' => $request->get('price_min'),
-            'price_max' => $request->get('price_max'),
-        ];
+     * Export products to Excel
+     */
+    public function export(Request $request)
+    {
+        try {
+            // Get filters from request
+            $filters = [
+                'search' => $request->get('search'),
+                'status' => $request->get('status'),
+                'brand_id' => $request->get('brand_id'),
+                'category_id' => $request->get('category_id'),
+                'stock_status' => $request->get('stock_status'),
+                'price_min' => $request->get('price_min'),
+                'price_max' => $request->get('price_max'),
+            ];
 
-        // Remove empty filters
-        $filters = array_filter($filters, function($value) {
-            return $value !== null && $value !== '';
-        });
+            // Remove empty filters
+            $filters = array_filter($filters, function ($value) {
+                return $value !== null && $value !== '';
+            });
 
-        // Generate filename with timestamp
-        $timestamp = now()->format('Y-m-d_H-i-s');
-        $filename = "products_export_{$timestamp}.xlsx";
+            // Generate filename with timestamp
+            $timestamp = now()->format('Y-m-d_H-i-s');
+            $filename = "products_export_{$timestamp}.xlsx";
 
-        // Create and download Excel file
-        return Excel::download(new ProductsExport($filters), $filename);
+            // Create and download Excel file
+            return Excel::download(new ProductsExport($filters), $filename);
+        } catch (\Exception $e) {
+            Log::error('Product export failed: ' . $e->getMessage());
 
-    } catch (\Exception $e) {
-        Log::error('Product export failed: ' . $e->getMessage());
-        
-        return back()->with('error', 'Failed to export products. Please try again.');
+            return back()->with('error', 'Failed to export products. Please try again.');
+        }
     }
-}
+
+    /**
+     * Import products from Excel file
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'import_file' => [
+                'required',
+                'file',
+                'mimes:xlsx,xls,csv',
+                'max:20480' // 20MB max file size for products (larger than brands)
+            ]
+        ], [
+            'import_file.required' => 'Please select a file to import.',
+            'import_file.mimes' => 'The file must be an Excel file (.xlsx, .xls) or CSV file (.csv).',
+            'import_file.max' => 'The file size must not exceed 20MB.'
+        ]);
+
+        try {
+            $import = new ProductsImport();
+
+            Excel::import($import, $request->file('import_file'));
+
+            $results = $import->getResults();
+
+            // Prepare flash messages based on results
+            $messages = [];
+
+            if ($results['success_count'] > 0) {
+                $messages[] = "Successfully imported {$results['success_count']} new products.";
+            }
+
+            if ($results['update_count'] > 0) {
+                $messages[] = "Updated {$results['update_count']} existing products.";
+            }
+
+            if ($results['error_count'] > 0) {
+                $messages[] = "Failed to process {$results['error_count']} rows due to errors.";
+            }
+
+            // If there are errors, store them in session for detailed view
+            if (!empty($results['errors'])) {
+                session(['import_errors' => $results['errors']]);
+
+                return redirect()->route('admin.products.index')
+                    ->with('warning', implode(' ', $messages))
+                    ->with('import_results', $results);
+            }
+
+            return redirect()->route('admin.products.index')
+                ->with('success', implode(' ', $messages))
+                ->with('import_results', $results);
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errorMessages = [];
+
+            foreach ($failures as $failure) {
+                $errorMessages[] = "Row {$failure->row()}: " . implode(', ', $failure->errors());
+            }
+
+            return redirect()->route('admin.products.index')
+                ->with('error', 'Import failed due to validation errors: ' . implode(' | ', array_slice($errorMessages, 0, 5)) . (count($errorMessages) > 5 ? '... and ' . (count($errorMessages) - 5) . ' more errors.' : ''));
+        } catch (\Exception $e) {
+            Log::error('Product import failed', [
+                'error' => $e->getMessage(),
+                'file' => $request->file('import_file')?->getClientOriginalName(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('admin.products.index')
+                ->with('error', 'Import failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download Excel template for product import
+     */
+    public function downloadTemplate()
+    {
+        try {
+            $headers = ProductsImport::getExpectedHeaders();
+            $sampleData = ProductsImport::getSampleData();
+
+            // Create a CSV template with more detailed structure
+            $filename = 'products_import_template_' . date('Y-m-d') . '.csv';
+            $temp_file = tempnam(sys_get_temp_dir(), 'products_template');
+
+            $handle = fopen($temp_file, 'w');
+
+            // Write headers
+            fputcsv($handle, array_keys($headers));
+
+            // Write header descriptions as a comment row
+            fputcsv($handle, array_values($headers));
+
+            // Add separator row
+            fputcsv($handle, array_fill(0, count($headers), '---'));
+
+            // Write sample data
+            foreach ($sampleData as $row) {
+                fputcsv($handle, $row);
+            }
+
+            fclose($handle);
+
+            return response()->download($temp_file, $filename, [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+            ])->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            Log::error('Failed to generate products template', ['error' => $e->getMessage()]);
+
+            return redirect()->route('admin.products.index')
+                ->with('error', 'Failed to generate template file.');
+        }
+    }
+
+    /**
+     * Get import errors for display
+     */
+    public function getImportErrors()
+    {
+        $errors = session('import_errors', []);
+        session()->forget('import_errors');
+
+        return response()->json($errors);
+    }
 }

@@ -101,6 +101,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Export products to Excel
     Route::get('products-export', [ProductController::class, 'export'])->name('products.export');
 
+    // Import products from Excel
+    Route::post('products/import', [ProductController::class, 'import'])->name('products.import');
+
+    // Download product import template
+    Route::get('products/template/download', [ProductController::class, 'downloadTemplate'])->name('products.template.download');
+
+    // Get import errors for products
+    Route::get('products/import-errors', [ProductController::class, 'getImportErrors'])->name('products.import-errors');
+
     /*
     |--------------------------------------------------------------------------
     | Product Image Management Routes
