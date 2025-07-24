@@ -62,9 +62,9 @@ import AuthenticatedLayout from '../../../layouts/AuthenticatedLayout.vue';
 import AddButton from '@/components/Common/AddButton.vue';
 import ExportButton from '@/components/Common/ExportButton.vue';
 import ImportButton from '@/components/Common/ImportButton.vue';
-import ImportErrorsModal from '@/components/Admin/Users/ImportErrorsModal.vue';
+import ImportErrorsModal from '@/components/Common/ImportErrorsModal.vue';
 import ImportModal from '@/components/Admin/Users/ImportModal.vue';
-import ImportResultsBanner from '@/components/Admin/Users/ImportResultsBanner.vue';
+import ImportResultsBanner from '@/components/Common/ImportResultsBanner.vue';
 import SearchFilters from '@/components/Admin/Users/SearchFilters.vue';
 import UsersTable from '@/components/Admin/Users/UsersTable.vue';
 
