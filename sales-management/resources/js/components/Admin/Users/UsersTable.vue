@@ -1,121 +1,186 @@
 <template>
-  <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th v-for="column in columns" 
-                :key="column.key"
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+  <div class="w-full">
+    <!-- Table Container -->
+    <div class="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead 
+              v-for="column in columns" 
+              :key="column.key"
+              class="font-medium"
+            >
               {{ column.label }}
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="user in sortedUsers" 
-              :key="user.id"
-              :class="getUserRowClass(user)"
-              class="transition-colors duration-150">
-            
+            </TableHead>
+            <TableHead class="font-medium">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow 
+            v-for="user in sortedUsers" 
+            :key="user.id"
+            :class="getUserRowClass(user)"
+            class="transition-colors hover:bg-muted/50"
+          >
             <!-- User Column -->
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="flex items-center">
-                <div class="flex-shrink-0 h-10 w-10">
-                  <div :class="getAvatarClass(user)"
-                       class="h-10 w-10 rounded-full flex items-center justify-center font-semibold text-sm">
+            <TableCell class="py-4">
+              <div class="flex items-center space-x-3">
+                <Avatar class="h-9 w-9">
+                  <AvatarFallback :class="getAvatarClass(user)">
                     {{ getUserInitial(user.name) }}
+                  </AvatarFallback>
+                </Avatar>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center space-x-2">
+                    <p class="text-sm font-medium text-foreground truncate">
+                      {{ user.name }}
+                    </p>
+                    <Badge 
+                      v-if="user.role === 'admin'" 
+                      variant="secondary" 
+                      class="bg-purple-100 text-purple-700 hover:bg-purple-100"
+                    >
+                      <Crown class="w-3 h-3 mr-1" />
+                      Admin
+                    </Badge>
                   </div>
-                </div>
-                <div class="ml-4">
-                  <div class="text-sm font-medium text-gray-900 flex items-center">
-                    {{ user.name }}
-                    <span v-if="user.role === 'admin'" class="ml-2 text-purple-600">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 11.586l4.293-4.293a1 1 0 011.414 1.414l-5 5z" clip-rule="evenodd"/>
-                      </svg>
-                    </span>
-                  </div>
-                  <div class="text-sm text-gray-500">{{ user.email }}</div>
+                  <p class="text-xs text-muted-foreground truncate">
+                    {{ user.email }}
+                  </p>
                 </div>
               </div>
-            </td>
+            </TableCell>
 
             <!-- Role Column -->
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span :class="getRoleBadgeClass(user.role)"
-                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+            <TableCell>
+              <Badge :variant="getRoleBadgeVariant(user.role)">
                 {{ user.role }}
-              </span>
-            </td>
+              </Badge>
+            </TableCell>
 
             <!-- Status Column -->
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span :class="getStatusBadgeClass(user.is_active)"
-                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
-                {{ user.is_active ? 'Active' : 'Inactive' }}
-              </span>
-            </td>
+            <TableCell>
+              <div class="flex items-center space-x-2">
+                <div 
+                  :class="getStatusIndicatorClass(user.is_active)"
+                  class="w-2 h-2 rounded-full"
+                ></div>
+                <Badge :variant="getStatusBadgeVariant(user.is_active)">
+                  {{ user.is_active ? 'Active' : 'Inactive' }}
+                </Badge>
+              </div>
+            </TableCell>
 
             <!-- Date Column -->
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ formatDate(user.created_at) }}
-            </td>
+            <TableCell class="text-muted-foreground">
+              <div class="flex items-center space-x-2">
+                <Calendar class="w-4 h-4" />
+                <span class="text-sm">{{ formatDate(user.created_at) }}</span>
+              </div>
+            </TableCell>
 
             <!-- Actions Column -->
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-              <div class="flex space-x-2">
-                <button @click="$emit('view', user)"
-                        class="text-blue-600 hover:text-blue-900 transition-colors duration-150">
-                  View
-                </button>
-                <button @click="$emit('edit', user)"
-                        class="text-green-600 hover:text-green-900 transition-colors duration-150">
-                  Edit
-                </button>
-                <button @click="$emit('toggle-status', user)"
-                        class="text-yellow-600 hover:text-yellow-900 transition-colors duration-150">
-                  {{ user.is_active ? 'Deactivate' : 'Activate' }}
-                </button>
-                <button @click="$emit('delete', user)"
-                        class="text-red-600 hover:text-red-900 transition-colors duration-150"
-                        :disabled="user.role === 'admin'">
-                  Delete
-                </button>
-              </div>
-            </td>
-          </tr>
+            <TableCell>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" class="h-8 w-8 p-0">
+                    <MoreHorizontal class="w-4 h-4" />
+                    <span class="sr-only">Open menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" class="w-48">
+                  <DropdownMenuItem @click="$emit('view', user)">
+                    <Eye class="w-4 h-4 mr-2" />
+                    View Details
+                  </DropdownMenuItem>
+                  <DropdownMenuItem @click="$emit('edit', user)">
+                    <Edit class="w-4 h-4 mr-2" />
+                    Edit User
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem @click="$emit('toggle-status', user)">
+                    <component 
+                      :is="user.is_active ? UserX : UserCheck" 
+                      class="w-4 h-4 mr-2" 
+                    />
+                    {{ user.is_active ? 'Deactivate' : 'Activate' }}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    @click="$emit('delete', user)"
+                    :disabled="user.role === 'admin'"
+                    class="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 class="w-4 h-4 mr-2" />
+                    Delete User
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </TableCell>
+          </TableRow>
 
           <!-- Empty State -->
-          <tr v-if="sortedUsers.length === 0">
-            <td :colspan="columns.length + 1" class="px-6 py-8 text-center text-gray-500">
-              {{ emptyMessage }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+          <TableRow v-if="sortedUsers.length === 0">
+            <TableCell :colspan="columns.length + 1" class="h-32 text-center">
+              <div class="flex flex-col items-center justify-center space-y-3">
+                <Users class="w-12 h-12 text-muted-foreground/50" />
+                <div class="space-y-1">
+                  <p class="text-sm font-medium text-muted-foreground">
+                    {{ emptyMessage }}
+                  </p>
+                  <p class="text-xs text-muted-foreground">
+                    Try adjusting your search criteria or add new users.
+                  </p>
+                </div>
+              </div>
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
     </div>
 
     <!-- Pagination -->
-    <div v-if="pagination" class="px-6 py-4 border-t bg-gray-50">
-      <div class="flex items-center justify-between">
-        <div class="text-sm text-gray-700">
-          Showing {{ pagination.from }} to {{ pagination.to }} of {{ pagination.total }} results
+    <div v-if="pagination" class="flex items-center justify-between px-2 py-4">
+      <div class="text-sm text-muted-foreground">
+        Showing {{ pagination.from }}-{{ pagination.to }} of {{ pagination.total }} users
+      </div>
+      
+      <div class="flex items-center space-x-2">
+        <Button
+          variant="outline"
+          size="sm"
+          @click="goToPreviousPage"
+          :disabled="!hasPreviousPage"
+          class="h-8 px-3"
+        >
+          <ChevronLeft class="w-4 h-4 mr-1" />
+          Previous
+        </Button>
+        
+        <div class="flex items-center space-x-1">
+          <Button
+            v-for="link in paginationNumbers"
+            :key="link.label"
+            :variant="link.active ? 'default' : 'outline'"
+            size="sm"
+            @click="link.url && $emit('paginate', link.url)"
+            :disabled="!link.url"
+            class="h-8 w-8 p-0"
+          >
+            {{ link.label }}
+          </Button>
         </div>
-        <div class="flex space-x-1">
-          <button v-for="link in pagination.links" 
-                  :key="link.label"
-                  @click="link.url && $emit('paginate', link.url)"
-                  :disabled="!link.url || link.active"
-                  :class="getPaginationLinkClass(link)"
-                  class="px-3 py-2 text-sm border rounded transition-colors duration-150">
-            <span v-if="link.label === '&laquo; Previous'">&laquo; Previous</span>
-            <span v-else-if="link.label === 'Next &raquo;'">Next &raquo;</span>
-            <span v-else>{{ link.label.replace(/(<([^>]+)>)/gi, '') }}</span>
-          </button>
-        </div>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          @click="goToNextPage"
+          :disabled="!hasNextPage"
+          class="h-8 px-3"
+        >
+          Next
+          <ChevronRight class="w-4 h-4 ml-1" />
+        </Button>
       </div>
     </div>
     
@@ -124,6 +189,37 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  MoreHorizontal,
+  Eye,
+  Edit,
+  Trash2,
+  UserX,
+  UserCheck,
+  Crown,
+  Calendar,
+  Users,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-vue-next';
 
 interface User {
   id: number;
@@ -175,49 +271,71 @@ const props = withDefaults(defineProps<Props>(), {
     { key: 'status', label: 'Status' },
     { key: 'created_at', label: 'Joined' }
   ],
-  emptyMessage: 'No users found matching your criteria.',
+  emptyMessage: 'No users found',
   sortAdminsFirst: true
 });
 
-defineEmits<Emits>();
+const emit = defineEmits<Emits>();
 
 const sortedUsers = computed(() => {
   if (!props.sortAdminsFirst) return props.users;
   
   return [...props.users].sort((a, b) => {
+    // Admins first
     if (a.role === 'admin' && b.role !== 'admin') return -1;
     if (a.role !== 'admin' && b.role === 'admin') return 1;
+    // Then by name
     return a.name.localeCompare(b.name);
   });
 });
 
+const paginationNumbers = computed(() => {
+  if (!props.pagination) return [];
+  
+  return props.pagination.links.filter(link => {
+    const label = link.label.replace(/(<([^>]+)>)/gi, '');
+    return label !== 'Previous' && label !== 'Next' && !isNaN(Number(label));
+  });
+});
+
+const hasPreviousPage = computed(() => {
+  if (!props.pagination) return false;
+  const prevLink = props.pagination.links.find(link => 
+    link.label.includes('Previous')
+  );
+  return prevLink?.url !== null;
+});
+
+const hasNextPage = computed(() => {
+  if (!props.pagination) return false;
+  const nextLink = props.pagination.links.find(link => 
+    link.label.includes('Next')
+  );
+  return nextLink?.url !== null;
+});
+
 const getUserRowClass = (user: User): string => {
-  return user.role === 'admin' ? 'bg-purple-50' : 'hover:bg-gray-50';
+  return user.role === 'admin' ? 'bg-purple-50/30' : '';
 };
 
 const getAvatarClass = (user: User): string => {
   return user.role === 'admin' 
-    ? 'bg-purple-100 text-purple-600' 
-    : 'bg-blue-100 text-blue-600';
+    ? 'bg-purple-100 text-purple-700 font-semibold' 
+    : 'bg-primary/10 text-primary font-semibold';
 };
 
-const getRoleBadgeClass = (role: string): string => {
-  return role === 'admin' 
-    ? 'bg-purple-100 text-purple-800 ring-1 ring-purple-600' 
-    : 'bg-blue-100 text-blue-800';
+const getRoleBadgeVariant = (role: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
+  return role === 'admin' ? 'secondary' : 'outline';
 };
 
-const getStatusBadgeClass = (isActive: boolean): string => {
+const getStatusBadgeVariant = (isActive: boolean): 'default' | 'secondary' | 'destructive' | 'outline' => {
+  return isActive ? 'default' : 'secondary';
+};
+
+const getStatusIndicatorClass = (isActive: boolean): string => {
   return isActive 
-    ? 'bg-green-100 text-green-800' 
-    : 'bg-red-100 text-red-800';
-};
-
-const getPaginationLinkClass = (link: PaginationLink): string => {
-  const baseClass = 'px-3 py-2 text-sm border rounded transition-colors duration-150';
-  if (link.active) return `${baseClass} bg-blue-500 text-white border-blue-500`;
-  if (!link.url) return `${baseClass} pointer-events-none opacity-50 bg-white text-gray-700 border-gray-300`;
-  return `${baseClass} bg-white text-gray-700 border-gray-300 hover:bg-gray-50`;
+    ? 'bg-green-500' 
+    : 'bg-gray-400';
 };
 
 const getUserInitial = (name: string): string => {
@@ -228,7 +346,29 @@ const formatDate = (date: string): string => {
   return new Date(date).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
+    day: '2-digit'
   });
 };
+
+const goToPreviousPage = () => {
+  if (!props.pagination) return;
+  const prevLink = props.pagination.links.find(link => 
+    link.label.includes('Previous')
+  );
+  if (prevLink?.url) {
+    emit('paginate', prevLink.url);
+  }
+};
+
+const goToNextPage = () => {
+  if (!props.pagination) return;
+  const nextLink = props.pagination.links.find(link => 
+    link.label.includes('Next')
+  );
+  if (nextLink?.url) {
+    emit('paginate', nextLink.url);
+  }
+};
+
+
 </script>
