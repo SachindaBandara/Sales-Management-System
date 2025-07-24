@@ -140,8 +140,7 @@ class UserController extends Controller
     }
 
     
-      public function toggleStatus(User $user)
-    {
+    public function toggleStatus(User $user){
         // Prevent admin from deactivating themselves
         if ($user->id === Auth::user()->id) {
             return back()->with('error', 'You cannot deactivate your own account.');
