@@ -4,6 +4,7 @@
       <form @submit.prevent="handleSearch" class="space-y-4">
         <!-- Main Filter Layout - Works for all screen sizes -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
           <!-- Search Input -->
           <div class="space-y-2">
             <Label for="search">Search</Label>
@@ -142,8 +143,6 @@
           </div>
         </div>
 
-
-
         <!-- Active Filters Display -->
         <div v-if="hasActiveFilters" class="flex flex-wrap gap-2 pt-4 border-t">
           <div class="text-sm text-muted-foreground mr-2">Active filters:</div>
@@ -240,8 +239,6 @@ const props = withDefaults(defineProps<Props>(), {
   statusOptions: () => [
     { value: 'active', label: 'Active' },
     { value: 'inactive', label: 'Inactive' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'suspended', label: 'Suspended' }
   ]
 });
 
@@ -274,7 +271,7 @@ const getStatusVariant = (value: string): 'default' | 'secondary' | 'destructive
     case 'active':
       return 'default';
     case 'inactive':
-      return 'secondary';
+      return 'destructive';
     case 'suspended':
       return 'destructive';
     case 'pending':
