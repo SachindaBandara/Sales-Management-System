@@ -388,7 +388,7 @@ onMounted(() => {
                 </h2>
                   <div class="flex space-x-3">
                     <!-- Import Button -->
-                    <button 
+                    <button
                         @click="openImportModal"
                         class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200 flex items-center space-x-2"
                     >
@@ -397,7 +397,7 @@ onMounted(() => {
                         </svg>
                         <span>Import Excel</span>
                     </button>
-                    
+
                     <!-- Export Button -->
                     <button
                         @click="exportProducts"
@@ -415,10 +415,6 @@ onMounted(() => {
                     </button>
 
                 <div class="flex items-center space-x-4">
-                    <!-- <Link :href="route('admin.products-statistics')"
-                          class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
-                        View Statistics
-                    </Link> -->
                     <Link :href="route('admin.products.create')"
                           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200">
                         Add New Product
@@ -761,7 +757,7 @@ onMounted(() => {
                             </svg>
                         </button>
                     </div>
-                    
+
                     <div class="mb-6 p-4 bg-blue-50 rounded-lg">
                         <h4 class="text-sm font-medium text-blue-900 mb-2">Excel Format Requirements:</h4>
                         <ul class="text-sm text-blue-800 space-y-1">
@@ -845,7 +841,7 @@ onMounted(() => {
                             </svg>
                         </button>
                     </div>
-                    
+
                     <div class="space-y-3 max-h-96 overflow-y-auto">
                         <div v-for="error in importErrors" :key="`error-${error.row}`" class="p-3 bg-red-50 border border-red-200 rounded-lg">
                             <div class="font-medium text-red-900 text-sm mb-1">Row {{ error.row }}</div>

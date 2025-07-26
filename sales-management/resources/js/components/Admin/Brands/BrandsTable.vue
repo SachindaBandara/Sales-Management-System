@@ -112,7 +112,7 @@
 </template>
 
 <script setup lang="ts">
-import Pagination from '@/components/Admin/Brands/Pagination.vue';
+import Pagination from '@/components/Common/Pagination.vue';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

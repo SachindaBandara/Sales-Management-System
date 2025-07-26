@@ -53,10 +53,10 @@
         />
 
         <!-- Import Errors Modal -->
-        <ImportErrorsModal 
-          :show="showImportErrors" 
-          :errors="importErrors" 
-          @close="showImportErrors = false" 
+        <ImportErrorsModal
+          :show="showImportErrors"
+          :errors="importErrors"
+          @close="showImportErrors = false"
         />
       </div>
     </div>
@@ -142,48 +142,49 @@ const importForm = useForm({
   import_file: null as File | null,
 });
 
+// Reactive brands data
 const updateFilters = (filters: Filters) => {
   form.search = filters.search;
   form.status = filters.status;
 };
-
+// Search function
 const search = () => {
   router.get(route('admin.brands.index'), form, {
     preserveState: true,
     replace: true,
   });
 };
-
+// Clear filters function
 const clearFilters = () => {
   form.search = '';
   form.status = '';
   search();
 };
-
+// Toggle brand status function
 const toggleStatus = (brand: Brand) => {
   if (confirm(`Are you sure you want to ${brand.is_active ? 'deactivate' : 'activate'} this brand?`)) {
     router.patch(route('admin.brands.toggle-status', brand.id));
   }
 };
-
+// Delete brand function
 const deleteBrand = (brand: Brand) => {
   if (confirm('Are you sure you want to delete this brand? This action cannot be undone.')) {
     router.delete(route('admin.brands.destroy', brand.id));
   }
 };
-
+// View and edit brand functions
 const viewBrand = (brand: Brand) => {
   router.get(route('admin.brands.show', brand.id));
 };
-
+// Edit brand function
 const editBrand = (brand: Brand) => {
   router.get(route('admin.brands.edit', brand.id));
 };
-
+// Paginate function
 const paginate = (url: string) => {
   router.get(url, {}, { preserveState: true });
 };
-
+// Export brands function
 const exportBrands = () => {
   if (isExporting.value) return;
 
@@ -206,17 +207,17 @@ const exportBrands = () => {
     isExporting.value = false;
   }, 2000);
 };
-
+// Open import modal function
 const openImportModal = () => {
   showImportModal.value = true;
   importForm.reset();
 };
-
+// Close import modal function
 const closeImportModal = () => {
   showImportModal.value = false;
   importForm.reset();
 };
-
+// Submit import function
 const submitImport = (file: File) => {
   importForm.import_file = file;
   if (!importForm.import_file) {
@@ -239,11 +240,11 @@ const submitImport = (file: File) => {
     },
   });
 };
-
+// Download template function
 const downloadTemplate = () => {
   window.open(route('admin.brands.template.download'), '_blank');
 };
-
+// Show import errors function
 const showErrors = async () => {
   try {
     const response = await fetch(route('admin.brands.import-errors'));
@@ -254,11 +255,11 @@ const showErrors = async () => {
     console.error('Failed to fetch import errors:', error);
   }
 };
-
+// Handle add brand function
 const handleAdd = () => {
   router.get(route('admin.brands.create'));
 };
-
+// Show import errors on mount if there are any
 onMounted(() => {
   if (props.import_results && props.import_results.error_count > 0) {
     showErrors();

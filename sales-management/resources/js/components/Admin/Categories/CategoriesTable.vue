@@ -5,77 +5,76 @@
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead
-              v-for="column in columns"
-              :key="column.key"
-              class="font-medium"
-            >
-              {{ column.label }}
-            </TableHead>
+            <TableHead class="font-medium">Category</TableHead>
+            <TableHead class="font-medium">Slug</TableHead>
+            <TableHead class="font-medium">Parent</TableHead>
+            <TableHead class="font-medium">Status</TableHead>
+            <TableHead class="font-medium">Created</TableHead>
             <TableHead class="font-medium">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           <TableRow
-            v-for="user in sortedUsers"
-            :key="user.id"
-            :class="getUserRowClass(user)"
+            v-for="category in sortedCategories"
+            :key="category.id"
             class="transition-colors hover:bg-muted/50"
           >
-            <!-- User Column -->
+            <!-- Category Column -->
             <TableCell class="py-4">
               <div class="flex items-center space-x-3">
-                <Avatar class="h-9 w-9">
-                  <AvatarFallback :class="getAvatarClass(user)">
-                    {{ getUserInitial(user.name) }}
+                <Avatar class="h-10 w-10">
+                  <img
+                    v-if="category.image"
+                    :src="category.image"
+                    class="h-10 w-10 rounded-full object-cover"
+                    alt="Category image"
+                  />
+                  <AvatarFallback class="bg-blue-100 text-blue-600 font-semibold">
+                    {{ category.name.charAt(0).toUpperCase() }}
                   </AvatarFallback>
                 </Avatar>
                 <div class="min-w-0 flex-1">
-                  <div class="flex items-center space-x-2">
-                    <p class="text-sm font-medium text-foreground truncate">
-                      {{ user.name }}
-                    </p>
-                    <Badge
-                      v-if="user.role === 'admin'"
-                      variant="secondary"
-                      class="bg-purple-100 text-purple-700 hover:bg-purple-100"
-                    >
-                      <Crown class="w-3 h-3 mr-1" />
-                      Admin
-                    </Badge>
+                  <div class="text-sm font-medium text-foreground truncate">
+                    {{ category.name }}
                   </div>
-                  <p class="text-xs text-muted-foreground truncate">
-                    {{ user.email }}
+                  <p
+                    v-if="category.description"
+                    class="text-xs text-muted-foreground truncate max-w-xs"
+                  >
+                    {{ category.description }}
                   </p>
                 </div>
               </div>
             </TableCell>
 
-            <!-- Role Column -->
-            <TableCell>
-              <Badge :variant="getRoleBadgeVariant(user.role)">
-                {{ user.role }}
-              </Badge>
+            <!-- Slug Column -->
+            <TableCell class="text-sm text-muted-foreground">
+              {{ category.slug }}
+            </TableCell>
+
+            <!-- Parent Column -->
+            <TableCell class="text-sm text-muted-foreground">
+              {{ category.parent ? category.parent.name : '-' }}
             </TableCell>
 
             <!-- Status Column -->
             <TableCell>
               <div class="flex items-center space-x-2">
                 <div
-                  :class="getStatusIndicatorClass(user.is_active)"
+                  :class="getStatusIndicatorClass(category.is_active)"
                   class="w-2 h-2 rounded-full"
                 ></div>
-                <Badge :variant="getStatusBadgeVariant(user.is_active)">
-                  {{ user.is_active ? 'Active' : 'Inactive' }}
+                <Badge :variant="getStatusBadgeVariant(category.is_active)">
+                  {{ category.is_active ? 'Active' : 'Inactive' }}
                 </Badge>
               </div>
             </TableCell>
 
-            <!-- Date Column -->
+            <!-- Created At Column -->
             <TableCell class="text-muted-foreground">
               <div class="flex items-center space-x-2">
                 <Calendar class="w-4 h-4" />
-                <span class="text-sm">{{ formatDate(user.created_at) }}</span>
+                <span class="text-sm">{{ formatDate(category.created_at) }}</span>
               </div>
             </TableCell>
 
@@ -89,30 +88,29 @@
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" class="w-48">
-                  <DropdownMenuItem @click="$emit('view', user)">
+                  <DropdownMenuItem @click="$emit('view', category)">
                     <Eye class="w-4 h-4 mr-2" />
                     View Details
                   </DropdownMenuItem>
-                  <DropdownMenuItem @click="$emit('edit', user)">
+                  <DropdownMenuItem @click="$emit('edit', category)">
                     <Edit class="w-4 h-4 mr-2" />
-                    Edit User
+                    Edit Category
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem @click="$emit('toggle-status', user)">
+                  <DropdownMenuItem @click="$emit('toggle-status', category)">
                     <component
-                      :is="user.is_active ? UserX : UserCheck"
+                      :is="category.is_active ? XCircle : CheckCircle"
                       class="w-4 h-4 mr-2"
                     />
-                    {{ user.is_active ? 'Deactivate' : 'Activate' }}
+                    {{ category.is_active ? 'Deactivate' : 'Activate' }}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    @click="$emit('delete', user)"
-                    :disabled="user.role === 'admin'"
+                    @click="$emit('delete', category)"
                     class="text-destructive focus:text-destructive"
                   >
                     <Trash2 class="w-4 h-4 mr-2" />
-                    Delete User
+                    Delete Category
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -120,16 +118,16 @@
           </TableRow>
 
           <!-- Empty State -->
-          <TableRow v-if="sortedUsers.length === 0">
-            <TableCell :colspan="columns.length + 1" class="h-32 text-center">
+          <TableRow v-if="sortedCategories.length === 0">
+            <TableCell :colspan="6" class="h-32 text-center">
               <div class="flex flex-col items-center justify-center space-y-3">
-                <Users class="w-12 h-12 text-muted-foreground/50" />
+                <Box class="w-12 h-12 text-muted-foreground/50" />
                 <div class="space-y-1">
                   <p class="text-sm font-medium text-muted-foreground">
-                    {{ emptyMessage }}
+                    No categories found
                   </p>
                   <p class="text-xs text-muted-foreground">
-                    Try adjusting your search criteria or add new users.
+                    Try adjusting your search criteria or add new categories.
                   </p>
                 </div>
               </div>
@@ -139,10 +137,11 @@
       </Table>
     </div>
 
-
-  <!-- Pagination -->
-        <Pagination :pagination="pagination" @paginate="$emit('paginate', $event)" />
-
+    <!-- Pagination -->
+    <Pagination
+      :pagination="pagination"
+      @paginate="$emit('paginate', $event)"
+    />
   </div>
 </template>
 
@@ -171,19 +170,22 @@ import {
   Eye,
   Edit,
   Trash2,
-  UserX,
-  UserCheck,
-  Crown,
+  XCircle,
+  CheckCircle,
   Calendar,
-  Users,
+  Box,
 } from 'lucide-vue-next';
 import Pagination from '@/components/Common/Pagination.vue';
 
-interface User {
+interface Category {
   id: number;
   name: string;
-  email: string;
-  role: string;
+  slug: string;
+  description: string | null;
+  image: string | null;
+  parent_id: number | null;
+  parent: Category | null;
+  sort_order: number;
   is_active: boolean;
   created_at: string;
 }
@@ -201,88 +203,44 @@ interface Pagination {
   links: PaginationLink[];
 }
 
-interface TableColumn {
-  key: string;
-  label: string;
-}
-
 interface Props {
-  users: User[];
+  categories: Category[];
   pagination?: Pagination;
-  columns?: TableColumn[];
-  emptyMessage?: string;
-  sortAdminsFirst?: boolean;
 }
 
 interface Emits {
-  (e: 'view', user: User): void;
-  (e: 'edit', user: User): void;
-  (e: 'toggle-status', user: User): void;
-  (e: 'delete', user: User): void;
+  (e: 'view', category: Category): void;
+  (e: 'edit', category: Category): void;
+  (e: 'toggle-status', category: Category): void;
+  (e: 'delete', category: Category): void;
   (e: 'paginate', url: string): void;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  columns: () => [
-    { key: 'user', label: 'User' },
-    { key: 'role', label: 'Role' },
-    { key: 'status', label: 'Status' },
-    { key: 'created_at', label: 'Joined' }
-  ],
-  emptyMessage: 'No users found',
-  sortAdminsFirst: true
-});
-
+const props = defineProps<Props>();
 defineEmits<Emits>();
 
-const sortedUsers = computed(() => {
-  if (!props.sortAdminsFirst) return props.users;
-
-  return [...props.users].sort((a, b) => {
-    // Admins first
-    if (a.role === 'admin' && b.role !== 'admin') return -1;
-    if (a.role !== 'admin' && b.role === 'admin') return 1;
-    // Then by name
+const sortedCategories = computed(() => {
+  return [...props.categories].sort((a, b) => {
+    if (a.sort_order !== b.sort_order) {
+      return a.sort_order - b.sort_order;
+    }
     return a.name.localeCompare(b.name);
   });
 });
 
-
-
-const getUserRowClass = (user: User): string => {
-  return user.role === 'admin' ? 'bg-purple-50/30' : '';
-};
-
-const getAvatarClass = (user: User): string => {
-  return user.role === 'admin'
-    ? 'bg-purple-100 text-purple-700 font-semibold'
-    : 'bg-primary/10 text-primary font-semibold';
-};
-
-const getRoleBadgeVariant = (role: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
-  return role === 'admin' ? 'secondary' : 'outline';
-};
-
 const getStatusBadgeVariant = (isActive: boolean): 'default' | 'secondary' | 'destructive' | 'outline' => {
-  return isActive ? 'default' : 'secondary';
+  return isActive ? 'default' : 'destructive';
 };
 
 const getStatusIndicatorClass = (isActive: boolean): string => {
-  return isActive
-    ? 'bg-green-500'
-    : 'bg-gray-400';
-};
-
-const getUserInitial = (name: string): string => {
-  return name.charAt(0).toUpperCase();
+  return isActive ? 'bg-green-500' : 'bg-red-500';
 };
 
 const formatDate = (date: string): string => {
   return new Date(date).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
-    day: '2-digit'
+    day: '2-digit',
   });
 };
-
 </script>
