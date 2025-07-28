@@ -6,13 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
 use App\Exports\OrdersExport;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 
 class OrderController extends Controller
@@ -301,4 +297,5 @@ class OrderController extends Controller
             return back()->with('error', 'Failed to export orders. Please try again.');
         }
     }
+
 }

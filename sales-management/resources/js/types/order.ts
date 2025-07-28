@@ -13,6 +13,7 @@ export interface OrderItem {
   product: Product;
   price: number;
   total: number;
+  order_id: number;
   product_id: number;
   product_name: string;
   product_sku: string;
@@ -26,6 +27,8 @@ export interface OrderItem {
     image: string;
     description: string;
   };
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Address {
@@ -64,11 +67,20 @@ export interface Order {
   processed_at?: string;
   shipped_at?: string;
   delivered_at?: string;
+  shipping_cost?: number;
+  updated_at: string;
 }
 
 export interface Product {
   id: number;
   name: string;
+  price: number;
+  stock_quantity: number;
+  track_quantity: boolean;
+  category?: {
+    id: number;
+    name: string;
+  };
   sku: string;
   image?: string;
 }
@@ -151,4 +163,41 @@ export interface Filters {
   search?: string
   date_from?: string
   date_to?: string
+}
+
+export interface OrderFilters {
+  search?: string;
+  status?: string;
+  payment_status?: string;
+  date_from?: string;
+  date_to?: string;
+  user_id?: number;
+}
+
+export interface InvoiceData {
+  invoice_number: string;
+  invoice_date: string;
+  due_date: string;
+  subtotal: string;
+  tax_rate: number;
+  tax_amount: string;
+  shipping_cost: string;
+  discount_amount: string;
+  total_amount: string;
+  currency: string;
+  currency_symbol: string;
+}
+
+export interface CompanyInfo {
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+  phone: string;
+  email: string;
+  website: string;
+  tax_id: string;
+  logo?: string;
 }

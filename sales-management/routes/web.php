@@ -1,5 +1,6 @@
 <?php
 // Admin Controllers
+use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\OrderExportController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BrandController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\Admin\ProductController;
 
 // Customer Controllers
 use App\Http\Controllers\Customer\CartController;
+use App\Http\Controllers\Customer\CustomerInvoiceController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
@@ -171,6 +173,18 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Export orders to Excel
     Route::get('orders-export', [OrderController::class, 'export'])->name('orders.export');
 
+    // Show invoice page
+    Route::get('/orders/{order}/invoice', [InvoiceController::class, 'show'])->name('orders.invoice.show');
+
+    // Download invoice PDF
+    Route::get('/orders/{order}/invoice/download', [InvoiceController::class, 'download'])->name('orders.invoice.download');
+
+    // Preview invoice PDF in browser
+    Route::get('/orders/{order}/invoice/preview', [InvoiceController::class, 'preview'])->name('orders.invoice.preview');
+
+    // Bulk download invoices
+    Route::post('/orders/invoice/bulk-download', [InvoiceController::class, 'bulkDownload'])->name('orders.invoice.bulk-download');
+
 });
 
 
@@ -186,15 +200,15 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
     // Show specific product
     Route::get('/products/{product}', [CustomerProductController::class, 'show'])->name('products.show');
 
-       /*
-    |--------------------------------------------------------------------------
-    | Cart Routes
-    |--------------------------------------------------------------------------
-    |
-    | These routes handle all image operations for products including upload,
-    | delete, reorder, and setting primary images.
-    |
-    */
+    /*
+ |--------------------------------------------------------------------------
+ | Cart Routes
+ |--------------------------------------------------------------------------
+ |
+ | These routes handle all image operations for products including upload,
+ | delete, reorder, and setting primary images.
+ |
+ */
 
     // Cart routes
     Route::get('cart', [CartController::class, 'cart'])->name('cart');
@@ -214,15 +228,15 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
     // Get cart count
     Route::get('cart/count', [CartController::class, 'getCartCount'])->name('cart.count');
 
-     /*
-    |--------------------------------------------------------------------------
-    | Order Management Routes
-    |--------------------------------------------------------------------------
-    |
-    | These routes handle all image operations for products including upload,
-    | delete, reorder, and setting primary images.
-    |
-    */
+    /*
+   |--------------------------------------------------------------------------
+   | Order Management Routes
+   |--------------------------------------------------------------------------
+   |
+   | These routes handle all image operations for products including upload,
+   | delete, reorder, and setting primary images.
+   |
+   */
 
     // List all orders
     Route::get('/orders', [CustomerOrderController::class, 'index'])->name('orders');
@@ -239,6 +253,11 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
     // Cancel an order
     Route::post('/orders/{order}/cancel', [CustomerOrderController::class, 'cancel'])->name('orders.cancel');
 
+    // Customer invoice download (only for their own orders)
+    Route::get('/orders/{id}/invoice', [CustomerInvoiceController::class, 'downloadInvoice'])->name('customer.orders.invoice.download');
+
+    // Preview invoice
+    Route::get('/orders/{id}/invoice/preview', [CustomerInvoiceController::class, 'previewInvoice'])->name('customer.orders.invoice.preview');
 
 });
 

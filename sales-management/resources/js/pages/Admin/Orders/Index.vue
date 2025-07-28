@@ -31,18 +31,13 @@
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
           <OrdersTable
             :orders="orders.data"
+            :pagination="orders"
             @view-order="viewOrder"
             @update-order-status="updateOrderStatus"
             @update-payment-status="updatePaymentStatus"
             @delete-order="deleteOrder"
-          />
-        </div>
-
-        <!-- Pagination -->
-        <div class="px-6 py-4 border-t bg-gray-50">
-          <OrderPagination
-            :orders="orders"
-            @change-page="changePage"
+            @paginate="paginate"
+            @bulk-invoice-download="handleBulkInvoiceDownload"
           />
         </div>
       </div>
@@ -58,10 +53,8 @@ import { ref, reactive, onMounted } from 'vue';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
-
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
 import OrdersTable from '@/components/Admin/Orders/OrdersTable.vue';
-import OrderPagination from '@/components/Admin/Orders/OrderPagination.vue';
 import OrderStatistics from '@/components/Admin/Orders/OrderStatistics.vue';
 import OrderFilters from '@/components/Admin/Orders/OrderFilters.vue';
 import ExportButton from '@/components/Common/ExportButton.vue';
@@ -189,7 +182,6 @@ const exportOrders = () => {
 
   isExporting.value = true;
 
-  // Create URL with current filters
   const params = new URLSearchParams();
   if (filters.search) params.append('search', filters.search);
   if (filters.status) params.append('status', filters.status);
@@ -199,7 +191,6 @@ const exportOrders = () => {
 
   const exportUrl = route('admin.orders.export') + (params.toString() ? '?' + params.toString() : '');
 
-  // Create a temporary link to trigger download
   const link = document.createElement('a');
   link.href = exportUrl;
   link.download = '';
@@ -207,15 +198,49 @@ const exportOrders = () => {
   link.click();
   document.body.removeChild(link);
 
-  // Reset loading state after a short delay
   setTimeout(() => {
     isExporting.value = false;
   }, 2000);
 };
 
-const changePage = (page: number) => {
-  const newFilters = { ...filters, page: page.toString() };
-  router.get(route('admin.orders.index'), newFilters, {
+const handleBulkInvoiceDownload = async (orderIds: number[]) => {
+  try {
+    const bulkDownloadUrl = route('admin.orders.invoice.bulk-download');
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = bulkDownloadUrl;
+    form.style.display = 'none';
+
+    // Add CSRF token
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    if (token) {
+      const tokenInput = document.createElement('input');
+      tokenInput.type = 'hidden';
+      tokenInput.name = '_token';
+      tokenInput.value = token;
+      form.appendChild(tokenInput);
+    }
+
+    // Add order_ids
+    const orderIdsInput = document.createElement('input');
+    orderIdsInput.type = 'hidden';
+    orderIdsInput.name = 'order_ids';
+    orderIdsInput.value = JSON.stringify(orderIds);
+    form.appendChild(orderIdsInput);
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+
+    toast.success('Bulk invoice download started');
+  } catch (error) {
+    console.error('Bulk invoice download failed:', error);
+    toast.error('Failed to download invoices. Please try again.');
+  }
+};
+
+const paginate = (url: string) => {
+  router.get(url, {}, {
     preserveState: true,
     replace: true,
     onSuccess: (page) => {
@@ -224,4 +249,3 @@ const changePage = (page: number) => {
   });
 };
 </script>
-
