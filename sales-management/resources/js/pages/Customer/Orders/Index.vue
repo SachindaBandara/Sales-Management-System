@@ -1,7 +1,34 @@
+<template>
+  <AuthenticatedLayout>
+    <div class="container mx-auto py-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>My Orders</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <OrdersTable
+            :orders="orders.data"
+            :loading="loading"
+            @view-order="handleViewOrder"
+            @cancel-order="handleCancelOrder"
+          />
+
+          <OrderPagination
+            :current-page="orders.current_page"
+            :last-page="orders.last_page"
+            :per-page="orders.per_page"
+            :total="orders.total"
+            @page-change="handlePageChange"
+          />
+        </CardContent>
+      </Card>
+    </div>
+  </AuthenticatedLayout>
+</template>
+
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { router } from '@inertiajs/vue3';
-import { usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
 import OrdersTable from '@/components/Order/OrdersTable.vue';
@@ -32,6 +59,7 @@ const fetchOrders = async (pageNum: number = 1) => {
   } catch (error) {
     console.error('Failed to fetch orders:', error);
     orders.value = { data: [], current_page: 1, last_page: 1, per_page: 10, total: 0 };
+    window.alert('Failed to fetch orders');
   } finally {
     loading.value = false;
   }
@@ -68,35 +96,15 @@ const handlePageChange = (newPage: number) => {
   fetchOrders(newPage);
 };
 
+// Handle flash messages
 onMounted(() => {
   fetchOrders();
+  const flashMessages = page.props.flash as any;
+  if (flashMessages?.success) {
+    window.alert(flashMessages.success);
+  }
+  if (flashMessages?.error) {
+    window.alert(flashMessages.error);
+  }
 });
 </script>
-
-<template>
-  <AuthenticatedLayout>
-    <div class="container mx-auto py-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>My Orders</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <OrdersTable
-            :orders="orders.data"
-            :loading="loading"
-            @view-order="handleViewOrder"
-            @cancel-order="handleCancelOrder"
-          />
-
-          <OrderPagination
-            :current-page="orders.current_page"
-            :last-page="orders.last_page"
-            :per-page="orders.per_page"
-            :total="orders.total"
-            @page-change="handlePageChange"
-          />
-        </CardContent>
-      </Card>
-    </div>
-  </AuthenticatedLayout>
-</template>

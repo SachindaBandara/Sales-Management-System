@@ -253,11 +253,11 @@ Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->
     // Cancel an order
     Route::post('/orders/{order}/cancel', [CustomerOrderController::class, 'cancel'])->name('orders.cancel');
 
-    // Customer invoice download (only for their own orders)
-    Route::get('/orders/{id}/invoice', [CustomerInvoiceController::class, 'downloadInvoice'])->name('customer.orders.invoice.download');
+    // Download invoice PDF
+    Route::get('/orders/{order}/invoice/download', [InvoiceController::class, 'download'])->name('orders.invoice.download');
 
-    // Preview invoice
-    Route::get('/orders/{id}/invoice/preview', [CustomerInvoiceController::class, 'previewInvoice'])->name('customer.orders.invoice.preview');
+    // Preview invoice PDF in browser
+    Route::get('/orders/{order}/invoice/preview', [InvoiceController::class, 'preview'])->name('orders.invoice.preview');
 
 });
 
