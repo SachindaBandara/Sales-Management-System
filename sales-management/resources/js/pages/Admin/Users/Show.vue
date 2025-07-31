@@ -47,7 +47,7 @@ const { user } = defineProps<{
 
 const toggleUserStatus = () => {
     if (confirm(`Are you sure you want to ${user.is_active ? 'deactivate' : 'activate'} this user?`)) {
-        router.patch(route('admin.users.update', user.id), {
+        router.patch(route('admin.users.toggle-status', user.id), {
             is_active: !user.is_active
         }, {
             preserveScroll: true,

@@ -25,8 +25,8 @@
                     :pagination="users"
                     @view="viewUser"
                     @edit="editUser"
-                    @toggle-status="toggleUserStatus"
-                    @delete="deleteUser"
+                    @toggle-status="openToggleStatusDialog"
+                    @delete="openDeleteDialog"
                     @paginate="handlePagination"
                 />
 
@@ -48,6 +48,23 @@
 
                 <!-- Import Errors Modal -->
                 <ImportErrorsModal :show="showImportErrors" :errors="importErrors" @close="showImportErrors = false" />
+
+                <!-- Confirm Dialogs -->
+                <ConfirmDialog
+                    ref="toggleStatusDialog"
+                    :title="toggleDialogTitle"
+                    :description="toggleDialogDescription"
+                    :confirm-text="toggleDialogConfirmText"
+                    @confirm="confirmToggleStatus"
+                />
+                <ConfirmDialog
+                    ref="deleteDialog"
+                    title="Delete User"
+                    description="Are you sure you want to delete this user? This action cannot be undone."
+                    confirm-text="Delete"
+                    confirm-variant="destructive"
+                    @confirm="confirmDelete"
+                />
             </div>
         </div>
     </AuthenticatedLayout>
@@ -57,6 +74,7 @@
 import { router, useForm } from '@inertiajs/vue3';
 import { onMounted, reactive, ref } from 'vue';
 import AuthenticatedLayout from '../../../layouts/AuthenticatedLayout.vue';
+import ConfirmDialog from '@/components/Common/ConfirmDialog.vue';
 
 // Import components
 import AddButton from '@/components/Common/AddButton.vue';
@@ -133,6 +151,12 @@ const isImporting = ref(false);
 const showImportModal = ref(false);
 const showImportErrors = ref(false);
 const importErrors = ref<ImportError[]>([]);
+const selectedUser = ref<User | null>(null);
+const toggleStatusDialog = ref<InstanceType<typeof ConfirmDialog> | null>(null);
+const deleteDialog = ref<InstanceType<typeof ConfirmDialog> | null>(null);
+const toggleDialogTitle = ref('');
+const toggleDialogDescription = ref('');
+const toggleDialogConfirmText = ref('');
 
 // Import form
 const importForm = useForm({
@@ -172,15 +196,28 @@ const editUser = (user: User) => {
     router.visit(route('admin.users.edit', user.id));
 };
 
-const toggleUserStatus = (user: User) => {
-    if (confirm(`Are you sure you want to ${user.is_active ? 'deactivate' : 'activate'} this user?`)) {
-        router.patch(route('admin.users.toggle-status', user.id));
+const openToggleStatusDialog = (user: User) => {
+    selectedUser.value = user;
+    toggleDialogTitle.value = user.is_active ? 'Deactivate User' : 'Activate User';
+    toggleDialogDescription.value = `Are you sure you want to ${user.is_active ? 'deactivate' : 'activate'} ${user.name}?`;
+    toggleDialogConfirmText.value = user.is_active ? 'Deactivate' : 'Activate';
+    toggleStatusDialog.value?.open();
+};
+
+const confirmToggleStatus = () => {
+    if (selectedUser.value) {
+        router.patch(route('admin.users.toggle-status', selectedUser.value.id));
     }
 };
 
-const deleteUser = (user: User) => {
-    if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-        router.delete(route('admin.users.destroy', user.id));
+const openDeleteDialog = (user: User) => {
+    selectedUser.value = user;
+    deleteDialog.value?.open();
+};
+
+const confirmDelete = () => {
+    if (selectedUser.value) {
+        router.delete(route('admin.users.destroy', selectedUser.value.id));
     }
 };
 
@@ -257,7 +294,7 @@ const showErrors = async () => {
 };
 
 const handleAdd = () => {
-  router.get(route('admin.users.create'));
+    router.get(route('admin.users.create'));
 };
 
 onMounted(() => {

@@ -64,6 +64,8 @@
 </template>
 
 <script setup lang="ts">
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+
 interface User {
     id: number;
     name: string;
