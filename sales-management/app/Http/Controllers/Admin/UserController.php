@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Exports\UsersExport;
@@ -45,8 +44,17 @@ class UserController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        // Get order statistics
+         $statistics = [
+            'total_customers' => User::customers()->count(),
+            'active_customers' => User::customers()->active()->count(),
+            'inactive_customers' => User::customers()->where('is_active', false)->count(),
+            'total_admins' => User::admins()->count(),
+        ];
+
         return Inertia::render('Admin/Users/Index', [
             'users' => $users,
+            'stats' => $statistics,
             'filters' => $request->only(['search', 'role', 'status']),
         ]);
     }
@@ -139,7 +147,7 @@ class UserController extends Controller
         return back()->with('success', 'User deleted successfully.');
     }
 
-    
+
     public function toggleStatus(User $user){
         // Prevent admin from deactivating themselves
         if ($user->id === Auth::user()->id) {
@@ -304,4 +312,6 @@ public function getImportErrors()
 
     return response()->json($errors);
 }
+
+
 }

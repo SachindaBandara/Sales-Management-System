@@ -13,6 +13,29 @@
 
         <div class="py-12">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
+                <div v-if="!isLoading" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <StatsCard
+                        :value="stats?.total_customers ?? 0"
+                        title="Total Customers"
+                        color="text-blue-600"
+                    />
+                      <StatsCard
+                        :value="stats?.total_admins ?? 0"
+                        title="Total Admins"
+                        color="text-purple-600"
+                    />
+                    <StatsCard
+                        :value="stats?.active_customers ?? 0"
+                        title="Active Customers"
+                        color="text-green-600"
+                    />
+                    <StatsCard
+                        :value="stats?.inactive_customers ?? 0"
+                        title="Inactive Customers"
+                        color="text-red-600"
+                    />
+                </div>
+
                 <!-- Import Results -->
                 <ImportResultsBanner :results="import_results" success-label="users created" update-label="users updated" @show-errors="showErrors" />
 
@@ -85,8 +108,9 @@ import ImportModal from '@/components/Admin/Users/ImportModal.vue';
 import ImportResultsBanner from '@/components/Common/ImportResultsBanner.vue';
 import SearchFilters from '@/components/Admin/Users/SearchFilters.vue';
 import UsersTable from '@/components/Admin/Users/UsersTable.vue';
+import StatsCard from '@/components/Common/StatsCard.vue';
 
-// Types (same as original)
+// Types
 interface User {
     id: number;
     name: string;
@@ -128,6 +152,13 @@ interface ImportResults {
     total_processed: number;
 }
 
+interface Stats {
+    total_customers: number;
+    active_customers: number;
+    inactive_customers: number;
+    total_admins: number;
+}
+
 const props = defineProps<{
     users: Users;
     filters: Filters;
@@ -137,6 +168,7 @@ const props = defineProps<{
         warning?: string;
     };
     import_results?: ImportResults;
+    stats?: Stats; // Made stats optional
 }>();
 
 // Reactive data
@@ -297,9 +329,12 @@ const handleAdd = () => {
     router.get(route('admin.users.create'));
 };
 
+const isLoading = ref(true);
+
 onMounted(() => {
     if (props.import_results && props.import_results.error_count > 0) {
         showErrors();
     }
+    isLoading.value = false;
 });
 </script>

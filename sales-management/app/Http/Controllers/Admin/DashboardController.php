@@ -28,7 +28,7 @@ class DashboardController extends Controller
             'stats' => $stats,
         ]);
     }
-    
+
 
     /**
      * Show the form for creating a new resource.
