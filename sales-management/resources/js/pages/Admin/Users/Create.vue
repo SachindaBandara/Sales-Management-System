@@ -6,12 +6,13 @@
                 <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                     Create New User
                 </h2>
-                <FormButton
-                    :href="route('admin.users.index')"
-                    variant="secondary"
-                >
-                    Back to Users
-                </FormButton>
+                <BackButton
+                    to="admin.users.index"
+                    label="Back to Users"
+                    variant="outline"
+                    size="sm"
+                    :showIcon="true"
+                />
             </div>
         </template>
 
@@ -34,7 +35,7 @@
 import AuthenticatedLayout from '../../../layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import FormButton from '@/components/Admin/Users/FormButton.vue';
+import BackButton from '@/components/Common/BackButton.vue';
 import UserForm from '@/components/Admin/Users/UserForm.vue';
 
 defineProps<{
