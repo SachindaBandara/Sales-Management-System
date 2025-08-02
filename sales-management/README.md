@@ -90,7 +90,7 @@ A comprehensive web-based Sales Management System built with Laravel and Vue.js.
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/SachindaBandara/Sales-Management-System.git
    cd sales-management
    ```
 
