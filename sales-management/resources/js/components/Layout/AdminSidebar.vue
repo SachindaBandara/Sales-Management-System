@@ -33,28 +33,28 @@
                 <SidebarLink
                     :href="route('admin.brands.index')"
                     :active="route().current('admin.brands.*')"
-                    icon="Users"
+                    icon="Award"
                 >
                     Brands
                 </SidebarLink>
                 <SidebarLink
                     :href="route('admin.categories.index')"
                     :active="route().current('admin.categories.*')"
-                    icon="Users"
+                    icon="FolderTree"
                 >
                     Categories
                 </SidebarLink>
                 <SidebarLink
                     :href="route('admin.products.index')"
                     :active="route().current('admin.products.*')"
-                    icon="Users"
+                    icon="Package"
                 >
                     Products
                 </SidebarLink>
-                   <SidebarLink
+                <SidebarLink
                     :href="route('admin.orders.index')"
                     :active="route().current('admin.orders.*')"
-                    icon="Users"
+                    icon="ShoppingCart"
                 >
                     Orders
                 </SidebarLink>

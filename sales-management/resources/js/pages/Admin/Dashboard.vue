@@ -1,19 +1,20 @@
 <template>
     <Head title="Admin Dashboard" />
+
     <AuthenticatedLayout>
         <template #header>
             <DashboardHeader />
         </template>
 
-        <div class="py-6">
+        <div class="py-4 sm:py-6">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <!-- Overview Stats -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
                     <StatsCard
                         title="Total Revenue"
                         :value="orderStats.total_revenue"
                         :icon="DollarSignIcon"
-                        backgroundColor="bg-green-100"
+                        backgroundColor="bg-green-50"
                         iconColor="text-green-600"
                         color="text-gray-900"
                         isCurrency
@@ -22,7 +23,7 @@
                         title="Today's Revenue"
                         :value="orderStats.todays_revenue"
                         :icon="TrendingUpIcon"
-                        backgroundColor="bg-blue-100"
+                        backgroundColor="bg-blue-50"
                         iconColor="text-blue-600"
                         color="text-gray-900"
                         isCurrency
@@ -31,7 +32,7 @@
                         title="Total Orders"
                         :value="orderStats.total_orders"
                         :icon="ShoppingBagIcon"
-                        backgroundColor="bg-purple-100"
+                        backgroundColor="bg-purple-50"
                         iconColor="text-purple-600"
                         color="text-gray-900"
                     />
@@ -39,14 +40,14 @@
                         title="Today's Orders"
                         :value="orderStats.todays_orders"
                         :icon="PackageIcon"
-                        backgroundColor="bg-orange-100"
+                        backgroundColor="bg-orange-50"
                         iconColor="text-orange-600"
                         color="text-gray-900"
                     />
                 </div>
 
                 <!-- Order Status Overview -->
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
                     <OrderStatusCard title="Pending" :value="orderStats.pending_orders" textColor="text-yellow-600" />
                     <OrderStatusCard title="Processing" :value="orderStats.processing_orders" textColor="text-blue-600" />
                     <OrderStatusCard title="Shipped" :value="orderStats.shipped_orders" textColor="text-purple-600" />
@@ -56,24 +57,26 @@
                 </div>
 
                 <!-- Charts Section -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
                     <ChartCard
                         title="Revenue"
                         type="revenue"
                         :initialData="dailyRevenueData"
                         @update="updateRevenueData"
+                        class="min-h-[300px] sm:min-h-[350px]"
                     />
                     <ChartCard
                         title="Orders"
                         type="orders"
                         :initialData="dailyOrdersData"
                         @update="updateOrdersData"
+                        class="min-h-[300px] sm:min-h-[350px]"
                     />
                 </div>
 
                 <!-- User Management Section -->
-                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-                    <UserStatsCard :stats="stats" />
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                    <UserStatsCard :stats="stats" class="lg:col-span-1" />
                     <RecentRegistrationsCard :users="stats.recent_registrations" class="lg:col-span-3" />
                 </div>
             </div>
@@ -146,3 +149,12 @@ const updateOrdersData = (data: ChartData) => {
     dailyOrdersData.value = data.data;
 };
 </script>
+
+<style scoped>
+/* Ensure smooth transitions for responsive layouts */
+@media (max-width: 640px) {
+    .grid-cols-2 {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+}
+</style>

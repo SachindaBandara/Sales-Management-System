@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Link } from '@inertiajs/vue3'
-import { LayoutDashboard, Users } from 'lucide-vue-next'
+import { LayoutDashboard, Users, Award, FolderTree, Package, ShoppingCart } from 'lucide-vue-next'
 
 interface Props {
   href: string
@@ -29,6 +29,10 @@ const props = withDefaults(defineProps<Props>(), {
 const iconComponents = {
   LayoutDashboard,
   Users,
+  Award,
+    FolderTree,
+    Package,
+    ShoppingCart
 }
 
 const iconComponent = computed(() => {
