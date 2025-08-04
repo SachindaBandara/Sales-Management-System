@@ -29,10 +29,6 @@
             <!-- Customer Navigation -->
             <nav v-if="$page.props.auth.user.is_customer" class="ml-8 hidden space-x-6 md:flex">
                 <NavLink :href="route('customer.dashboard')" :active="route().current('customer.dashboard')">
-                    Dashboard
-                </NavLink>
-
-                 <NavLink :href="route('customer.home')" :active="route().current('customer.home')">
                     Home
                 </NavLink>
 

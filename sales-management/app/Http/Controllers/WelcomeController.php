@@ -1,25 +1,23 @@
 <?php
 
-namespace App\Http\Controllers\Customer;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Brand;
 use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Validator;
 
 
-class ProductController extends Controller
+class WelcomeController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $user = Auth::user();
-
         $products = Product::query()
             ->with(['brand', 'category'])
             ->active()
@@ -70,30 +68,13 @@ class ProductController extends Controller
         $brands = Brand::active()->withCount('products')->having('products_count', '>', 0)->get();
         $categories = Category::active()->withCount('products')->having('products_count', '>', 0)->get();
 
-        return Inertia::render('Customer/Products/Index', [
-            'user' => $user,
+        return Inertia::render('Welcome', [
             'products' => $products,
             'brands' => $brands,
             'categories' => $categories,
             'filters' => $request->only(['search', 'category', 'brand', 'min_price', 'max_price', 'sort']),
         ]);
-    
-    }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
     }
 
     /**
@@ -101,32 +82,9 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        return Inertia::render('Customer/Products/Show', [
+        return Inertia::render('Show', [
         'product' => $product->load(['brand', 'category']),
     ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
 }

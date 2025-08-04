@@ -11,10 +11,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
 use App\Exports\ProductsExport;
 use App\Imports\ProductsImport;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+
 use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller

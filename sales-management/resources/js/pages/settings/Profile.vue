@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthenticationLayout from '../../../js/layouts/AuthenticatedLayout.vue';
-import { type User } from '@/types';
+import { type User } from '@/types/guest';
 import SettingLayout from '../../layouts/settings/Layout.vue';
 
 interface Props {

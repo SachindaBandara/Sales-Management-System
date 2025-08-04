@@ -1,7 +1,6 @@
 <?php
 // Admin Controllers
 use App\Http\Controllers\Admin\InvoiceController;
-use App\Http\Controllers\Admin\OrderExportController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -12,10 +11,10 @@ use App\Http\Controllers\Admin\ProductController;
 
 // Customer Controllers
 use App\Http\Controllers\Customer\CartController;
-use App\Http\Controllers\Customer\CustomerInvoiceController;
-use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
+
+use App\Http\Controllers\WelcomeController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -28,6 +27,10 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 })->name('home');
+
+Route::get('products', [WelcomeController::class, 'index'])->name('products');
+Route::get('products/{product}', [WelcomeController::class, 'show'])->name('products.show');
+
 
 // Redirect after login based on role
 Route::middleware('auth')->get('/dashboard', function () {
@@ -195,11 +198,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 Route::middleware(['auth', 'customer'])->prefix('customer')->name('customer.')->group(function () {
 
     // Customer Dashboard
-    Route::get('dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
-    // Customer Home
-    Route::get('home', [CustomerProductController::class, 'index'])->name('home');
+    Route::get('/', [CustomerDashboardController::class, 'index'])->name('dashboard');
+  
     // Show specific product
-    Route::get('/products/{product}', [CustomerProductController::class, 'show'])->name('products.show');
+    Route::get('/products/{product}', [CustomerDashboardController::class, 'show'])->name('products.show');
 
     /*
  |--------------------------------------------------------------------------

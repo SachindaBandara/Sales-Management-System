@@ -15,7 +15,7 @@ defineProps<Props>()
     <h2 class="text-2xl font-semibold text-gray-900 mb-2">Your cart is empty</h2>
     <p class="text-gray-600 mb-6">Looks like you haven't added any items to your cart yet.</p>
     <Link
-      :href="getRouteUrl('customer.home', '/home')"
+      :href="getRouteUrl('customer.dashboard', '/')"
       class="inline-flex items-center px-6 py-3 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition-colors"
     >
       Continue Shopping
